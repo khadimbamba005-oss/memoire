@@ -1,0 +1,105 @@
+{% load static%}
+<html>
+    <head>
+        <title>Dashboard enseignant</title>
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    </head>
+    <body class="bg-light">
+        <div class="container mt-4">
+            <h2 class="mt-4">Bienvenue {{ request.user.username}}</h2>
+
+            <div class="card-mb-4">
+                <div class="card body">
+                    <h5>Faire mon &#233margement</h5>
+                    <form action="{% url 'emarger' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-succes">Emarger</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-mb-4">
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Date</th>
+                            <th>Arriv&#233e</th>
+                            <th>D&#233part</th>
+                            <th>Contenu</th>
+                        </tr>
+                        {% for e in emargements %}
+                        <tr>
+                            <td>{ e.date}</td>
+                            <td>{ e.arrivee}</td>
+                            <td>{ e.depart}</td>
+                            <td>{ e.contenu}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Relever absence</h5>
+                    <form action="{% url 'absence' %}">
+                        {% csrf_token %}
+
+                        <select name="etudiant" class="form-control mb-2">
+                            {% for etudiant in etudiants %}
+                            <option value="{{ etudiant.id}}">
+                                {{etudiant.prenom}} {{etudiant.Nom}}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <textarea name="motif" id="" class="form-control mb-2" placeholder="Motif"></textarea>
+                        <button class="btn btn-danger">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Ajouter une s&#233ance de cours</h5>
+                    <form action="{% url 'remplir' %}" method="post">
+                        {% csrf_token %}
+                        <select name="" id="" class="form-control mb-2" name="class">
+                            {% for classe in classes %}
+                            <option value="{{
+                                classe.id
+                            }}">
+                                {{ classe.filiere }} {{ classe.niveau }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <textarea name="contenu" id="" class="form-control mb-2"></textarea>
+                        <button class="btn btn-success">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Mes cours r&#233cents</h5>
+
+                    <table class="table">
+                        <tr>
+                            <th>Date</th>
+                            <th>Classe</th>
+                            <th>Contenu</th>
+                        </tr>
+                        {% for c in cours %}
+                        <tr>
+                            <td>{{c.date}}</td>
+                            <td>{{c.classe}}</td>
+                            <td>{{c.contenu}}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script src="{% static 'js/bootstrap.bundle.min.js'}"></script>
+    </body>
+</html>

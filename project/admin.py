@@ -1,13 +1,19 @@
 from django.contrib import admin
-from .models import Absence, Enseignant, Etudiant, Emargment, User, AbstractUser, Classe ,Cahier
+from .models import Absence, Enseignant, Etudiant, Emargement, User, AbstractUser, Classe ,Cahier , Responsable
 
-from project.models import Absence
 admin.site.register(User)
+
 # Register your models here.
 @admin.register(Enseignant)
 class EnseignantAdmin(admin.ModelAdmin):
     list_display = ('nom', 'prenom', 'email' , 'telephone')
     search_fields = ('nom', 'prenom')
+
+@admin.register(Responsable)
+class ResponsableAdmin(admin.ModelAdmin):
+    list_display = ('prenom', 'nom' )
+    list_filter = ('nom',)
+
 
 @admin.register(Classe)
 class ClasseAdmin(admin.ModelAdmin):
@@ -20,7 +26,7 @@ class EtudiantAdmin(admin.ModelAdmin):
     list_filter = ('filiere',)
 
 
-@admin.register(Emargment)
+@admin.register(Emargement)
 class EmargmentAdmin(admin.ModelAdmin):
     list_display = ('enseignant', 'date')
     list_filter = ('date',)
