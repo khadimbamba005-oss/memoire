@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-4">Relever absences</h3>
+
+<div class="card-shadow">
+    <div class="card-body">
+        <form action="" method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="">Etudiant</label>
+                <select name="etudiant" id="">
+                    {% for e in etudiants%}
+                    <option value="{{ e.id }}">
+                        {{ e.prenom }} {{ e.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">Motif</label>
+                <textarea name="motif" class="form-control" id=""></textarea>
+            </div>
+            <button class="btn btn-danger mt-3">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -4,7 +4,9 @@ from django.contrib.auth import authenticate,login
 from django.contrib.auth.decorators import login_required
 from .models import Emargement,Enseignant,Absence,Etudiant,Classe , Cahier
 from datetime import datetime
-
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+import json
 
 def connexion(request):
     
@@ -43,43 +45,58 @@ def connexion(request):
 def dashboard_enseignant(request):
     enseignant  = Enseignant.objects.get(user=request.user)
 
+    stats = ((
+        Emargement.objects
+        .filter(enseignant=enseignant)
+        .annotate(jour=TruncDate('date'))
+        .values('jour')
+        .annotate(total=Count('id')))
+        .order_by('jour')
+    )
+
+    labels = [str(s['jour']) for s in stats]
+    data = [s['total'] for s in stats]
+
     emargements = Emargement.objects.filter(
         enseignant=enseignant
     ).order_by('-date')[:5]
 
-    etudiants = Etudiant.objects.all()
-
-    classes = Classe.objects.all()
-
+    total_emargements  = Emargement.objects.filter(
+        enseignant = enseignant
+    ).count()
 
     cahiers = Cahier.objects.filter(
         enseignant = enseignant
     ).order_by('-date')[:5]
 
+    total_cours = Cahier.objects.filter(
+        enseignant = enseignant
+    ).count()
 
-    return render(request,'dashboard_enseignant.html',
+    return render(request,'enseignants/dashboard_enseignant.html',
                   {
                       'emargemens':emargements,
-                      'etudiants': etudiants,
-                      'classes':classes,
-                      'cahiers':cahiers
+                      'cahiers':cahiers,
+                      'total_emargements':total_emargements,
+                      'total_cours':total_cours,
+                      'labels':labels,
+                      'data':data
                   })
 
-
+@login_required
 def emarger(request):
     enseignant = Enseignant.objects.get(user = request.user)
 
-    if request.method ==  'POST':
-        Emargement.objects.create(
-            enseignant = enseignant,
-            date = datetime.today(),
-            arrivee = datetime.now().time(),
-            depart = datetime.now().time()
-        )
+    Emargement.objects.create(
+        enseignant = enseignant,
+        date = datetime.today(),
+        arrivee = datetime.now().time(),
+        depart = datetime.now().time()
+    )
     
     return redirect('dashboard_enseignant')
 
-
+@login_required
 def absence(request):
     if request.method == 'POST':
         etudiant_id  = request.POST.get('etudiant'),
@@ -93,17 +110,15 @@ def absence(request):
 
         return redirect('dashboard_enseignant')
     
-
+@login_required
 def remplir(request):
-    enseignant = Enseignant.objects.get(user = request.user)
-
-    if request.method == 'POST':
-        classe_id  = request.POST.get('classe'),
-        contenu = request.POST.get('contenu')
     
+    if request.method == 'POST':
+        enseignant = Enseignant.objects.get(user=request.user)
+        contenu = request.POST.get('contenu')
+
         Cahier.objects.create(
             enseignant = enseignant,
-            classe_id = classe_id,
             date = datetime.today(),
             contenu = contenu
         )

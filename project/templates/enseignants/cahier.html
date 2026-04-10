@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Cahier de texte </h3>
+
+<div class="card-shadow">
+    <div class="card-body">
+        <form action="" method="post">
+            {% csrf_token %}
+            <label for="">Classe</label>
+            <select name="classe" id="">
+                {% for c in classes%}
+                <option value="{{ c.id }}">
+                    {{ c.filiere }} {{ c.niveau }}
+                </option>
+                {% endfor %}
+            </select>
+            <div class="form-group">
+                <label for="">Contenu du cours</label>
+                <textarea name="contenu" id="" class="form-control"></textarea>
+            </div>
+
+            <button class="btn btn-primary">+Ajouter</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

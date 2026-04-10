@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3 class="mb-4">
+    Faire un &#233margement
+</h3>
+
+<div class="card-shadow">
+    <div class="card-body">
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="">Heure d'arriv&#233e</label>
+                <input type="time" class="form-control" name="arrivee" required>
+            </div>
+            <div class="form-group">
+                <label for="">Heure de d&#233part</label>
+                <input type="time" class="form-control" name="depart" required>
+            </div>
+            <button class="btn btn-success mt-3">Valider</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
