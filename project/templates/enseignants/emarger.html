@@ -10,6 +10,20 @@
         <form action="" method="post">
             {% csrf_token %}
             <div class="form-group">
+                <label for="">Enseignant</label>
+                <select class="form-control" name="enseignant" id="">
+                    {% for e in enseignants %}
+                    <option value="{{ e.id }}">
+                        {{ e.prenom }} {{ e.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">Date</label>
+                <input type="date" class="form-control" name="date" required>
+            </div>
+            <div class="form-group">
                 <label for="">Heure d'arriv&#233e</label>
                 <input type="time" class="form-control" name="arrivee" required>
             </div>

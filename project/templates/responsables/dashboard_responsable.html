@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard responsable p&#233dagogique</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
+</head>
+<body>
+    <nav class="navbar-navbar-light bg-white shadow mb-4">
+        <span class="navbar-brand">
+            {{ request.user.username }}
+        </span>
+        <a href="" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt">
+                Deconnexion
+            </i>
+        </a>
+    </nav>
+    <div class="container-fluid">
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                Emargements r&#233cents
+            </div>
+            <div class="card-body">
+                <table class="table-striped">
+                    <tr>
+                        <th>Enseignant</th>
+                        <th>Date</th>
+                        <th>Heure d'&#223rriv&#233e</th>
+                        <th>Heure de d&#233part</th>
+                    </tr>
+                    {% for e in emargements %}
+                    <tr>
+                        <td>{{ e.enseignant }}</td>
+                        <td>{{ e.date }}</td>
+                        <td>{{ e.arrivee }}</td>
+                        <td>{{ e.depart }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Aucun &#233margment</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+            Absences
+            </div>
+            <div class="card-body">
+                <table class="table-striped">
+                    <tr>
+                        <th>Etudiant</th>
+                        <th>Date</th>
+                        <th>Motif</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                    {% for a in absences %}
+                    <tr>
+                        <td>{{ a.etudiant }}</td>
+                        <td>{{ a.date }}</td>
+                        <td>{{ a.motif }}</td>
+                        <td>
+                            {% if a.justifie %}
+                            <span class="badge badge-success">Justifi&#233e</span>
+                            {% else %}
+                            <span class="badge badge-danger">Non justifi&#233e</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not a.justifie %}
+                            <a href="{% url 'justifier' a.id %}" class="btn btn-success">
+                                Justifier
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

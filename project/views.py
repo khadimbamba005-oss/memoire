@@ -2,28 +2,20 @@ from django.shortcuts import render , redirect , get_list_or_404
 from django.http import HttpResponseForbidden
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.decorators import login_required
-from .models import Emargement,Enseignant,Absence,Etudiant,Classe , Cahier
+from .models import Emargement,Enseignant,Absence,Etudiant,Classe,Cahier,Responsable
 from datetime import datetime
 from django.db.models.functions import TruncDate
 from django.db.models import Count
-import json
 
 def connexion(request):
-    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        print("Nom d'utilsateur:", username)
-        print("Mot de passe", password)
-
-        user = authenticate(request , username=username , password=password)
-
+        user = authenticate(request,username=username, password=password)
 
         if user is not None:
-            print("Connexion reussie")
             login(request,user)
-
 
             if user.role  == 'admin':
                 return redirect('dashboard_admin')
@@ -35,113 +27,119 @@ def connexion(request):
                 return redirect('dashboard_responsable')
             
             else:
-                return render(request , 'login.html', {
+                return render(request,'login.html', {
                     'error':'Identifiants incorrects'
                 })
-            
     return render(request,'login.html')
 
-
 def dashboard_enseignant(request):
-    enseignant  = Enseignant.objects.get(user=request.user)
+    enseignant  = Enseignant.objects.filter(user=request.user).first()
 
-    stats = ((
-        Emargement.objects
-        .filter(enseignant=enseignant)
-        .annotate(jour=TruncDate('date'))
-        .values('jour')
-        .annotate(total=Count('id')))
-        .order_by('jour')
-    )
-
-    labels = [str(s['jour']) for s in stats]
-    data = [s['total'] for s in stats]
+    if not enseignant:
+        return redirect('login')
 
     emargements = Emargement.objects.filter(
         enseignant=enseignant
     ).order_by('-date')[:5]
 
-    total_emargements  = Emargement.objects.filter(
-        enseignant = enseignant
-    ).count()
+    total_emargements = emargements.count()
 
     cahiers = Cahier.objects.filter(
         enseignant = enseignant
     ).order_by('-date')[:5]
 
-    total_cours = Cahier.objects.filter(
-        enseignant = enseignant
-    ).count()
+    total_cours = cahiers.count()
 
     return render(request,'enseignants/dashboard_enseignant.html',
                   {
-                      'emargemens':emargements,
-                      'cahiers':cahiers,
-                      'total_emargements':total_emargements,
-                      'total_cours':total_cours,
-                      'labels':labels,
-                      'data':data
+                     'emargements':emargements,
+                     'cahiers':cahiers,
+                     'total_emargements':total_emargements,
+                     'total_cours':total_cours,
                   })
 
-@login_required
-def emarger(request):
-    enseignant = Enseignant.objects.get(user = request.user)
+def dashboard_responsable(request):
+    responsable = Responsable.objects.filter(user=request.user).first()
 
-    Emargement.objects.create(
-        enseignant = enseignant,
-        date = datetime.today(),
-        arrivee = datetime.now().time(),
-        depart = datetime.now().time()
+    if  not responsable:
+        return redirect('login')
+    
+    emargements = Emargement.objects.filter().order_by('-date')[:10]
+
+    absences = Absence.objects.all().order_by('-date')
+
+    return render(request,'responsables/dashboard_responsable.html',{
+        'emargements':emargements,
+        'absences':absences
+    })
+    
+def emarger(request):
+    enseignant = Enseignant.objects.get(user=request.user)
+    ens = Enseignant.objects.all()
+    
+    if request.method == 'POST':
+        arrivee = request.POST.get('arrivee')
+        depart = request.POST.get('depart')
+
+        Emargement.objects.create(
+            enseignant = enseignant,
+            date = datetime.today(),
+            arrivee = arrivee,
+            depart = depart
     )
     
-    return redirect('dashboard_enseignant')
-
-@login_required
-def absence(request):
-    if request.method == 'POST':
-        etudiant_id  = request.POST.get('etudiant'),
-        motif = request.POST.get('motif')
-
-        Absence.objects.create(
-            etudiant_id = etudiant_id,
-            date = datetime.today(),
-            motif = motif
-        )
-
         return redirect('dashboard_enseignant')
-    
-@login_required
-def remplir(request):
-    
+    return render(request , 'enseignants/emarger.html',
+                  {
+                      'ens':ens
+                  })
+
+def absence(request):
+    etudiants = Etudiant.objects.all()
+
     if request.method == 'POST':
-        enseignant = Enseignant.objects.get(user=request.user)
+            etudiant_id = request.POST.get('etudiant')
+            motif = request.POST.get('motif')
+
+            Absence.objects.create(
+                etudiant_id = etudiant_id,
+                date = datetime.today(),
+                motif = motif
+            )
+            return redirect('dashboard_enseignant')
+    return render(request, 'enseignants/absence.html',{
+        'etudiants':etudiants
+    })
+
+
+def cahier(request):
+    classes = Classe.objects.all()
+    enseignant = Enseignant.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        classe_id = request.POST.get('classe')
         contenu = request.POST.get('contenu')
 
         Cahier.objects.create(
             enseignant = enseignant,
+            contenu = contenu,
             date = datetime.today(),
-            contenu = contenu
         )
-    return redirect('dashboard_enseignant')
 
-def list(request):
-    if request.user.role != 'responsable':
-        return HttpResponseForbidden("Acces refuse")
-    
-    absences = Absence.objects.all()
+        return redirect('dashboard_enseignant')
+    return render(request,'enseignants/cahier',{
+        'classes':classes
+    })
 
-    return render(request , 'absences.html', {'absences':absences})
+def justifier(request,id):
+   absence = Absence.objects.all().get(id=id)
+   if request.method == 'POST':
+       absence.justifie = True
+       absence.save()
 
-
-def justifier(request , id):
-    if request.user.role != 'responsable':
-        return HttpResponseForbidden("Acces refuse")
-
-    absence = get_list_or_404(Absence,id=id)
-
-    if request.method == 'POST':
-        motif = request.POST.get('motif')
-        absence.justifier(motif)
-        return redirect('liste_absences')
-    
-    return render(request , 'justifier.html', {'absence':absence})
+       return redirect('dashboard_responsable')
+   
+   return render(request,'responsables/dashboard_responsable.html',
+                 {
+                     'absence':absence
+                 })

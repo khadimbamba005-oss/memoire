@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justifier une absence</title>
+    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow col-md-6 mx-auto">
+            <div class="card-body text-center">
+                <h4 class="mb-3">
+                    Justifier une absence 
+                </h4>
+                <p>Etudiant: <strong>{{ absence.etudiant.prenom }} {{ absence.etudiant.nom }}</strong> <strong>{{ absence.etudiant.nom }}</strong></p>
+                <p> Date : <strong>{{ absence.date }}</strong> </p>
+                <p><strong>{{ absence.motif }}</strong></p>
+
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-success">
+                        Confirmer justification
+                    </button>
+                    <a href="{% url 'dashboard_responsable' %}" class="btn btn-secondary">Annuler</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

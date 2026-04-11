@@ -7,8 +7,8 @@
     <div class="col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
-                <h6 class="text-primary">Total &#233margement</h6>
-                    <h3>{{total_emargements}}</h3>
+                <h6 class="text-primary">Total &#233margements</h6>
+                    <h3>{{ total_emargements }}</h3>
             </div>
         </div>
     </div>
@@ -19,52 +19,12 @@
                 <h6 class="text-primary">
                     Total cours
                 </h6>
-                <h3>{{ total_cours}}</h3>
+                <h3>{{ total_cours }}</h3>
             </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Pr&#233cence (Emargements) </h5>
-            <canvas id="presenceChart"></canvas>
-        </div>
-    </div>
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-header bg-primary text-white">
-                <h5>Emargements r&#233cents</h5>
-            </div>
-
-            <div class="card-body">
-                <table class="table-striped table-hover">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Date</th>
-                            <th>Arriv&#233e</th>
-                            <th>Depart</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for e in emargements %}
-                        <tr>
-                            <td>{{ e.date }}</td>
-                            <td>{{ e.arrivee }}</td>
-                            <td>{{ e.depart }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">
-                                Aucun &#233margement
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
+    
     <div class="col-lg-6 mb-4">
         <div class="card shadow h-100">
             <div class="card-header bg-success text-white">
@@ -87,7 +47,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="2" class="text-center text-muted">Aucun cours enr&#233gistr&#</td>
+                            <td colspan="2" class="text-center text-muted">Aucun cours enr&#233gistr&#233</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -97,26 +57,5 @@
     </div>
     
 </div>
-
-<script src="{% static 'js/chart.js' %}"></script>
-<script>
-
-    const labels = JSON.parse('{{ labels|escapejs }}');
-    const data = JSON.parse('{{ data|escapejs }}');
-
-    const ctx = document.getElementById('presenceChart').getContext('2d');
-
-    new Chart(ctx , {
-        type: 'bar',
-        data:{
-            labels:labels,
-            datasets: [{
-                label:'Nombre d\'emargements',
-                data:data,
-            }]
-        }
-    });
-
-</script>
 
 {% endblock %}
