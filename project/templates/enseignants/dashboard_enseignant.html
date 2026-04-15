@@ -1,61 +1,115 @@
 {% extends 'base.html' %}
-{% load static %}
-{% block  content %}
+{% block content %}
 
-<div class="row">
+<div class="container-fluid">
+    <h2 class="mb-4 text-gray-800">
+        Mon dashboard
+    </h2>
 
-    <div class="col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <h6 class="text-primary">Total &#233margements</h6>
-                    <h3>{{ total_emargements }}</h3>
+    <div class="row">
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-3">
+                <div class="card-body text-center">
+                    <div class="text-xs font-weight-bold text-success-text-uppercase mb-2">
+                        Modules enseign&#233s 
+                    </div>
+                    <div class="h3 font-weight-bold text-gray-800">
+                        {{ heures_par_module|length }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-3">
+                <div class="card-body text-center">
+                    <div class="text-xs font-weight-bold text-uppercase mb-2">
+                        Activit&#233 r&#233cente 
+                    </div>
+                    <div class="h6 text-gray-800">
+                        Cours des 7 derniers jours 
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <h6 class="text-primary">
-                    Total cours
-                </h6>
-                <h3>{{ total_cours }}</h3>
-            </div>
-        </div>
-    </div>
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    Mes modules en progression
+                </div>
 
-    
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-header bg-success text-white">
-                <h5>Cours r&#233cents</h5>
-            </div>
+                <div class="card-body">
+                    {% if modules_data %}
+                        {% for m in modules_data%}
 
-            <div class="card-body">
-                <table class="table-striped table-hover">
-                    <thead class="thead-dark">
-                        <tr>
-                            <td>Date</td>
-                            <td>Contenu</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for c in cahiers %}
-                        <tr>
-                            <td>{{ c.date }}</td>
-                            <td>{{ c.contenu }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="text-center text-muted">Aucun cours enr&#233gistr&#233</td>
-                        </tr>
+                        <div class="mb-4">
+                            <h6 class="font-weight-bold">
+                                {{ m.nom }}
+                            </h6>
+                            <div class="small text-muted mb-1">
+                                {{ m.heures }} h / {{ m.volHoraire }} h 
+                            </div>
+
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width:{{ m.pourcentage|default:0}}%">
+                                    {{ m.pourcentage|floatformat:1}}%
+
+                                </div>
+                            </div>
+                        </div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    {% else %}
+                        <p class="text-center text-muted">
+                            Aucun module trouv&#233 
+                        </p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-    
-</div>
 
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    Cours r&#233cents 
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-hover mb-0 table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Date</th>
+                                    <th>Contenu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in cahiers %}
+                                <tr>
+                                    <td class="align-middle">{{ c.module.nom }}</td>
+                                    <td class="align-middle"> {{ c.date }}</td>
+                                    <td class="align-middle">
+                                      {{ c.contenu }}  
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr >
+                                    <td colspan="5" class="text-center text-muted">
+                                        Aucun cours cette semaine
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
 {% endblock %}

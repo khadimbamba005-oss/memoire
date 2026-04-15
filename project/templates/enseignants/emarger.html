@@ -11,17 +11,11 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="">Enseignant</label>
-                <select class="form-control" name="enseignant" id="">
-                    {% for e in enseignants %}
-                    <option value="{{ e.id }}">
-                        {{ e.prenom }} {{ e.nom }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <input type="text" class="form-control" name="enseignant" value="{{ enseignant.prenom }} {{ enseignant.nom }} " readonly>
             </div>
             <div class="form-group">
                 <label for="">Date</label>
-                <input type="date" class="form-control" name="date" required>
+                <input type="date" class="form-control" name="date"  value="{{ jour|date:'Y-m-d' }}"  >
             </div>
             <div class="form-group">
                 <label for="">Heure d'arriv&#233e</label>
@@ -30,6 +24,13 @@
             <div class="form-group">
                 <label for="">Heure de d&#233part</label>
                 <input type="time" class="form-control" name="depart" required>
+            </div>
+            <div class="form-group">
+                <label for="">Module</label>
+                <input type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <textarea name="contenu" id="" class="form-control" placeholder="contenu"></textarea>
             </div>
             <button class="btn btn-success mt-3">Valider</button>
         </form>

@@ -2,10 +2,11 @@ from django.shortcuts import render , redirect , get_list_or_404
 from django.http import HttpResponseForbidden
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.decorators import login_required
-from .models import Emargement,Enseignant,Absence,Etudiant,Classe,Cahier,Responsable
-from datetime import datetime
+from .models import Emargement,Enseignant,Absence,Etudiant,Classe,Cahier,Responsable,Module
+from datetime import datetime , timedelta ,date
 from django.db.models.functions import TruncDate
-from django.db.models import Count
+from django.db.models import Sum,F , ExpressionWrapper ,DurationField
+from django.utils import timezone
 
 def connexion(request):
     if request.method == 'POST':
@@ -32,30 +33,71 @@ def connexion(request):
                 })
     return render(request,'login.html')
 
+#dashboard pour enseignant 
 def dashboard_enseignant(request):
-    enseignant  = Enseignant.objects.filter(user=request.user).first()
+    enseignant  = Enseignant.objects.get(user=request.user)
 
-    if not enseignant:
-        return redirect('login')
+    semaine = timezone.now().date() - timedelta(days=7)
+
+    cahiers = Cahier.objects.filter(
+        enseignant = enseignant,
+        date__gte = semaine
+    ).order_by('-date')
 
     emargements = Emargement.objects.filter(
         enseignant=enseignant
-    ).order_by('-date')[:5]
+    )
 
-    total_emargements = emargements.count()
+    duree = emargements.annotate(
+        duree = ExpressionWrapper(
+            F('depart') - F('arrivee'),
+            output_field=DurationField()
+        )
+    )
 
-    cahiers = Cahier.objects.filter(
-        enseignant = enseignant
-    ).order_by('-date')[:5]
 
-    total_cours = cahiers.count()
+    modules = Module.objects.filter(enseignant=enseignant)
 
+    modules_data = []
+
+    for m in modules:
+        heures =  Emargement.objects.filter(
+            enseignant=enseignant,
+            module = m
+        )
+        
+        heures = heures.annotate(
+            duree = ExpressionWrapper(
+                F('depart')-F('arrivee'),
+                output_field=DurationField()
+            )
+        )
+
+        total_module = sum(
+            [h.duree.total_seconds() / 3600 for h in heures if h.duree]
+        )
+
+        pourcentage = (total_module / m.volHoraire * 100) if m.VolHoraire else 0
+       
+        modules_data.append(
+            {
+                'nom':m.nom,
+                'heures':round(total_module, 2),
+                'volHoraire':m.volHoraire,
+                'pourcentage':round(pourcentage , 2),
+                
+            }
+        )
+
+    classes = Classe.objects.all()
+    etudiants = Etudiant.objects.filter(filiere__in =classes)
     return render(request,'enseignants/dashboard_enseignant.html',
                   {
-                     'emargements':emargements,
                      'cahiers':cahiers,
-                     'total_emargements':total_emargements,
-                     'total_cours':total_cours,
+                     'enseignant':enseignant,
+                     'modules_data':modules_data,
+                     'etudiants':etudiants
+                     
                   })
 
 def dashboard_responsable(request):
@@ -74,42 +116,50 @@ def dashboard_responsable(request):
     })
     
 def emarger(request):
+
     enseignant = Enseignant.objects.get(user=request.user)
-    ens = Enseignant.objects.all()
-    
+    jour = date.today()
+
+   
+
     if request.method == 'POST':
         arrivee = request.POST.get('arrivee')
         depart = request.POST.get('depart')
+        module = request.POST.get('module')
+        contenu = request.POST.get('contenu')
 
         Emargement.objects.create(
-            enseignant = enseignant,
-            date = datetime.today(),
+            enseignant=enseignant,
+            date = jour,
             arrivee = arrivee,
-            depart = depart
-    )
-    
+            depart = depart,
+            contenu = contenu,
+            module = module
+        )
         return redirect('dashboard_enseignant')
     return render(request , 'enseignants/emarger.html',
                   {
-                      'ens':ens
+                      'enseignant':enseignant,
+                      'jour':jour
                   })
 
+
 def absence(request):
-    etudiants = Etudiant.objects.all()
+    classe_id = request.GET.get('classe')
+    etudiants = []
 
-    if request.method == 'POST':
-            etudiant_id = request.POST.get('etudiant')
-            motif = request.POST.get('motif')
+    if classe_id:
+           etudiants = Etudiant.objects.filter(filiere_id = classe_id)
 
-            Absence.objects.create(
-                etudiant_id = etudiant_id,
-                date = datetime.today(),
-                motif = motif
-            )
-            return redirect('dashboard_enseignant')
-    return render(request, 'enseignants/absence.html',{
-        'etudiants':etudiants
-    })
+    classes = Classe.objects.all()
+
+    return render(request,'enseignants/absence.html',
+                  {
+                      'classes':classes,
+                      'etudiants':etudiants,
+                      'selected_classe':classe_id
+                  })
+   
 
 
 def cahier(request):

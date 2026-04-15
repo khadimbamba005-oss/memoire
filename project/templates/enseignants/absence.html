@@ -1,26 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3 class="mb-4">Relever absences</h3>
 
+<h3 class="mb-4 text-gray-800">
+    Relever absences
+</h3>
 <div class="card shadow">
     <div class="card-body">
-        <form action="" method="post">
-            {% csrf_token %}
+        <form action=""  method="get" class="mb-4" >
             <div class="form-group">
-                <label for="">Etudiant</label>
-                <select name="etudiant" id="" class="form-control" required>
-                    {% for e in etudiants %}
-                    <option value="{{ e.id }}">
-                        {{ e.prenom }} {{ e.nom }}
+                <label for="">Classe</label>
+                <select name="classe" id="" class="form-control" onchange="this.form.submit()">
+                    <option value="">Choisir une classe</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}"
+                        {% if selected_classe == c.id|stringformat:"s" %}selected{% endif %}> {{ c.filiere }} {{ c.niveau }}
                     </option>
                     {% endfor %}
                 </select>
             </div>
+        </form>
+        <form action="" method="post" >
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="">Etudiant</label>
+                <select name="etudiant" id="" class="form-control">
+                    {% if etudiants %}
+                        {% for e in etudiants %}
+                        <option value="{{ e.id }}">
+                            {{ e.prenom }} {{ e.nom }}
+                        </option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled selected>---Selectionnez une classe d'abord---</option>
+                    {% endif %}
+                </select>
+            </div>
+
             <div class="form-group">
                 <label for="">Motif</label>
-                <textarea name="motif" class="form-control" id="" required></textarea>
+                <textarea name="motif" class="form-control" id="" rows="3"
+                placeholder="Absence non justifiee" required></textarea>
             </div>
-            <button class="btn btn-danger mt-3">Enregistrer</button>
+
+            <button class="btn btn-danger mt-2">
+                <i class="fas fa-user-time"></i>Enregistrer l'absence
+            </button>
         </form>
     </div>
 </div>

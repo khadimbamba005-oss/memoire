@@ -60,7 +60,7 @@ class Etudiant(models.Model):
     adresse = models.CharField(max_length=20)
     telephone = models.CharField(max_length=9)
     email = models.EmailField()
-    filiere = models.ForeignKey(Classe, on_delete=models.CASCADE)
+    filiere = models.ForeignKey(Classe, on_delete=models.CASCADE , related_name="etudiants")
 
     def save(self, *args, **kwargs):
         if not self.matricule:
@@ -69,13 +69,22 @@ class Etudiant(models.Model):
 
     def __str__(self):
         return f" {self.prenom} {self.nom}"
+    
+class Module(models.Model):
+    nom = models.CharField(max_length=30, null=True)
+    volHoraire = models.IntegerField(null=True)
+    enseignant = models.ForeignKey('Enseignant' , on_delete=models.CASCADE ,related_name="modules" , null=True)
 
+    def __str__(self):
+        return self.nom
 
 class Emargement(models.Model):
     enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     date = models.DateField()
     arrivee = models.TimeField()
     depart = models.TimeField()
+    module = models.ForeignKey('Module' , on_delete=models.CASCADE , blank=True , null=True )
+    contenu = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.enseignant} {self.date}"
@@ -94,10 +103,14 @@ class Absence(models.Model):
         self.save()
 
 
+
+
+
 class Cahier(models.Model):
     enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     classe = models.ForeignKey(Classe , on_delete=models.CASCADE , null=True , blank=True)
     date = models.DateField()
+    module = models.ForeignKey('Module',on_delete=models.CASCADE ,blank=True , null=True)
     contenu = models.TextField()
 
     def __str__(self):
