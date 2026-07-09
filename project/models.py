@@ -18,7 +18,7 @@ class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('enseignant','Enseignant'),
-        ('responsable','Responsable')
+        ('responsable','Responsable'),
     )
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES , default='enseignant')
@@ -73,7 +73,7 @@ class Etudiant(models.Model):
 class Module(models.Model):
     nom = models.CharField(max_length=30, null=True)
     volHoraire = models.IntegerField(null=True)
-    enseignant = models.ForeignKey('Enseignant' , on_delete=models.CASCADE ,related_name="modules" , null=True)
+    
 
     def __str__(self):
         return self.nom
@@ -83,8 +83,7 @@ class Emargement(models.Model):
     date = models.DateField()
     arrivee = models.TimeField()
     depart = models.TimeField()
-    module = models.ForeignKey('Module' , on_delete=models.CASCADE , blank=True , null=True )
-    contenu = models.TextField(blank=True)
+    module = models.ForeignKey(Module , on_delete=models.CASCADE , blank=True , null=True )
 
     def __str__(self):
         return f"{self.enseignant} {self.date}"
@@ -103,16 +102,25 @@ class Absence(models.Model):
         self.save()
 
 
-
-
-
 class Cahier(models.Model):
     enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     classe = models.ForeignKey(Classe , on_delete=models.CASCADE , null=True , blank=True)
     date = models.DateField()
-    module = models.ForeignKey('Module',on_delete=models.CASCADE ,blank=True , null=True)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE ,blank=True , null=True)
     contenu = models.TextField()
 
     def __str__(self):
         return f"{self.enseignant} {self.date}"
 
+
+class Affectation(models.Model):
+    enseignant = models.ForeignKey(Enseignant , on_delete=models.CASCADE)
+    module = models.ForeignKey(Module,on_delete=models.CASCADE)
+    annee_universitaire = models.CharField(max_length=20,default="2025-2026" , blank=True)
+
+
+    class Meta:
+        unique_together = ("enseignant", "module", "annee_universitaire")
+    
+    def __str__(self):
+        return f"{self.enseignant}  {self.module}"

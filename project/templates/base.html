@@ -3,9 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>Gestion emargements</title>
-    <link rel="stylesheet" href="https://fonts.googlesapsis.com/css?family=Nuito:200,300,400,500,600,700,800,900">
-
+    <link rel="stylesheet" href="{% static 'fonts/Nunito-Bold.ttf' %}">
+    <link rel="stylesheet" href="{% static 'fonts/Nunito-Light.ttf'%}">
+    <link rel="stylesheet" href="{% static 'fonts/Nunito-Regular.ttf' %}">
     <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
+
     <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
 
     <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
@@ -47,6 +49,11 @@
         <li class="nav-item">
             <a href="{% url 'cahier' %}" class="nav-link text-white">
                 <i class="fas fa-book"></i>Cahiers
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'cahier' %}" class="nav-link text-white">
+                <i class="fas fa-history"></i>R&#233cents
             </a>
         </li>
         {% endif %}

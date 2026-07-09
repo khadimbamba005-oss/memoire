@@ -8,6 +8,6 @@ urlpatterns = [
     path('enseignants/absence/',views.absence,name= 'absence'),
     path('enseignants/cahier/',views.cahier , name='cahier'),
     path('responsables/dashboard_responsable', views.dashboard_responsable,name='dashboard_responsable'),
-    path('justifier/<int:id>',views.justifier, name='justifier')
-    
+    path('justifier/<int:id>',views.justifier, name='justifier'),
+    path("responsables/affecter_module",views.affecter_module,name="affecter_module"),
 ]

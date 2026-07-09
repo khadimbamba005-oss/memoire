@@ -53,9 +53,8 @@
                             </div>
 
                             <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" style="width:{{ m.pourcentage|default:0}}%">
+                                <div class="progress-bar bg-success" role="progressbar" style="width:'{{ m.pourcentage|default:0}}%'">
                                     {{ m.pourcentage|floatformat:1}}%
-
                                 </div>
                             </div>
                         </div>
@@ -69,47 +68,6 @@
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-lg-12 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    Cours r&#233cents 
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table-hover mb-0 table-bordered">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Module</th>
-                                    <th>Date</th>
-                                    <th>Contenu</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for c in cahiers %}
-                                <tr>
-                                    <td class="align-middle">{{ c.module.nom }}</td>
-                                    <td class="align-middle"> {{ c.date }}</td>
-                                    <td class="align-middle">
-                                      {{ c.contenu }}  
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr >
-                                    <td colspan="5" class="text-center text-muted">
-                                        Aucun cours cette semaine
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
 </div>
 {% endblock %}

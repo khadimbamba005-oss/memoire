@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <h2 class="mb-4 text-gray-800">
+        Affectation des modules 
+    </h2>
+
+    <div class="card shadow">
+        <div class="card-header bg primary text-white">
+            Affecter un module à un enseignant
+        </div>
+
+        <div class="card-body">
+            <form action="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="">Module</label>
+                    <select name="module" class="form-control">
+                        <option value="">Choisir un module</option>
+
+                        {% for module in modules %}
+                        <option value="{{ module.id }}">
+                            {{ module.nom }}
+                            {{ module.volHoraire }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="">Enseignant</label>
+                    <select name="enseignant" class="form-control" required>
+                        <option value="">
+                            Choisir un enseignant
+                        </option>
+                        {% for e in enseignants %}
+                        <option value="{{ e.id }}">
+                            {{ e.prenom }} {{ e.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-success">
+                    <i class="fas fa-check-circle"></i>
+                    Affecter le module
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

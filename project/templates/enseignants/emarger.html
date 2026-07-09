@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h3 class="mb-4">
+<h3 class="mb-4 text-center">
     Faire un &#233margement
 </h3>
 
@@ -29,11 +29,11 @@
                 <label for="">Module</label>
                 <input type="text" class="form-control">
             </div>
-            <div class="form-group">
-                <textarea name="contenu" id="" class="form-control" placeholder="contenu"></textarea>
-            </div>
-            <button class="btn btn-success mt-3">Valider</button>
+            
+            <button class="btn btn-success ">Valider</button>
+            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-danger">Annuler</a>
         </form>
+        
     </div>
 </div>
 

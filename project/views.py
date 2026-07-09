@@ -100,6 +100,7 @@ def dashboard_enseignant(request):
                      
                   })
 
+
 def dashboard_responsable(request):
     responsable = Responsable.objects.filter(user=request.user).first()
 
@@ -120,24 +121,20 @@ def emarger(request):
     enseignant = Enseignant.objects.get(user=request.user)
     jour = date.today()
 
-   
-
     if request.method == 'POST':
         arrivee = request.POST.get('arrivee')
         depart = request.POST.get('depart')
         module = request.POST.get('module')
-        contenu = request.POST.get('contenu')
 
         Emargement.objects.create(
             enseignant=enseignant,
             date = jour,
             arrivee = arrivee,
             depart = depart,
-            contenu = contenu,
             module = module
         )
         return redirect('dashboard_enseignant')
-    return render(request , 'enseignants/emarger.html',
+    return render(request,'enseignants/emarger.html',
                   {
                       'enseignant':enseignant,
                       'jour':jour
@@ -147,17 +144,30 @@ def emarger(request):
 def absence(request):
     classe_id = request.GET.get('classe')
     etudiants = []
+    classes = Classe.objects.all()
+    today = date.today()
 
     if classe_id:
-           etudiants = Etudiant.objects.filter(filiere_id = classe_id)
+        etudiants = Etudiant.objects.filter(filiere_id = classe_id)
+    if request.method == 'POST':
+        etudiant_id = request.POST.get('etudiant')
+        motif = request.POST.get('motif')
 
-    classes = Classe.objects.all()
+        if etudiant_id:
+            etudiant = Etudiant.objects.get(id=etudiant_id)
 
+            Absence.objects.create(
+                etudiant = etudiant,
+                date = today,
+                motif = motif
+            )
+            return redirect('dashboard_enseignant')
     return render(request,'enseignants/absence.html',
                   {
                       'classes':classes,
                       'etudiants':etudiants,
-                      'selected_classe':classe_id
+                      'selected_classe':classe_id,
+                      'today':today
                   })
    
 
@@ -173,7 +183,7 @@ def cahier(request):
         Cahier.objects.create(
             enseignant = enseignant,
             contenu = contenu,
-            date = datetime.today(),
+            date = date.today(),
         )
 
         return redirect('dashboard_enseignant')
@@ -193,3 +203,22 @@ def justifier(request,id):
                  {
                      'absence':absence
                  })
+
+def affecter_module(request):
+
+    modules = Module.objects.all()
+    enseignants = Enseignant.objects.all()
+
+    if request.method == "POST":
+        module = Module.objects.get(id = request.POST.get("enseignant"))
+
+        module.enseignant = enseignant
+        module.save()
+
+        return redirect("dashboard_responsable")
+    
+    return render(request,"responsable/affecter_module.html",{
+        "modules":modules,
+        "enseignants":enseignants
+    })
+        
