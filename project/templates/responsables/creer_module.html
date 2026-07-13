@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mx-auto max-w-xl">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Créer un module</h1>
+    <p class="text-base-content/70">Ajoutez un module avant de l’affecter à un enseignant.</p>
+    </div>
+    <section class="card bg-base-100 shadow">
+        <form method="post" class="card-body gap-5">
+        {% csrf_token %}
+            <label class="form-control">
+                <span class="label-text mb-1">Nom du module</span>
+                <input id="nom" name="nom" class="input input-bordered w-full" maxlength="30" required autofocus>
+            </label>
+            <label class="form-control"><span class="label-text mb-1">Volume horaire total</span><input id="vol_horaire" name="vol_horaire" type="number" min="1" class="input input-bordered w-full" required></label>
+            <div class="card-actions justify-end">
+                <a class="btn btn-ghost" href="{% url 'dashboard_responsable' %}">Annuler</a>
+                <button class="btn btn-primary" type="submit">Créer le module</button>
+            </div>
+        </form>
+</section>
+</div>
+{% endblock %}

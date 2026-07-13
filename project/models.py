@@ -38,14 +38,6 @@ class Enseignant(models.Model):
     def __str__(self):
         return f"{self.prenom} {self.nom}"
     
-class Responsable(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nom = models.CharField(max_length=20)
-    prenom = models.CharField(max_length=20)
-
-    def __str__(self):
-        return f"{self.prenom} {self.nom}"
-
 class Classe(models.Model):
     filiere = models.CharField(max_length=20)
     niveau = models.CharField(max_length=20)
@@ -84,6 +76,7 @@ class Emargement(models.Model):
     arrivee = models.TimeField()
     depart = models.TimeField()
     module = models.ForeignKey(Module , on_delete=models.CASCADE , blank=True , null=True )
+    
 
     def __str__(self):
         return f"{self.enseignant} {self.date}"
@@ -93,7 +86,6 @@ class Absence(models.Model):
     etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE)
     date = models.DateField()
     justifie = models.BooleanField(default=False)
-    motif = models.CharField(max_length=500)
 
     
     def justifier(self , motif):

@@ -1,104 +1,39 @@
 {% load static %}
-<html lang="fr">
+<!doctype html>
+<html lang="fr" data-theme="corporate">
 <head>
     <meta charset="utf-8">
-    <title>Gestion emargements</title>
-    <link rel="stylesheet" href="{% static 'fonts/Nunito-Bold.ttf' %}">
-    <link rel="stylesheet" href="{% static 'fonts/Nunito-Light.ttf'%}">
-    <link rel="stylesheet" href="{% static 'fonts/Nunito-Regular.ttf' %}">
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
-
-    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
-
-    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestion pédagogique</title>
+    <link href="{% static 'vendor/daisyui/daisyui.css' %}" rel="stylesheet" type="text/css">
+    <script src="{% static 'vendor/daisyui/tailwind-browser.js' %}"></script>
 </head>
-    
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
-        <a href="#" class="navbar-brand text-white">
-            Gestion des em&#233margments
-        </a>
-
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
-        aria-controls="navbarContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarContent">
-
-    <ul class="navbar-nav mr-auto">
-        {% if request.user.role == 'enseignant' %}
-        <li class="nav-item">
-            <a href="{% url 'dashboard_enseignant' %}" class="nav-link text-white">
-                <i class="fas fa-fw fa-tachometer-alt"></i>
-                Dashboard
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'emarger' %}" class="nav-link text-white">
-                <i class="fas fa-calendar-check"></i>&#233marger
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'absence' %}" class="nav-link text-white">
-                <i class="fas fa-user-times"></i>Absences
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'cahier' %}" class="nav-link text-white">
-                <i class="fas fa-book"></i>Cahiers
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'cahier' %}" class="nav-link text-white">
-                <i class="fas fa-history"></i>R&#233cents
-            </a>
-        </li>
-        {% endif %}
-
-        {% if request.user.role == 'admin' %}
-        <li class="nav-item">
-            <a href="{% url 'dashboard_admin' %}" class="nav-link">
-                <i class="fas  fa-cog"></i>Admin
-            </a>
-        </li>
-        {% endif %}
-
-        {% if request.user.role == 'responsable'%}
-        <li class="nav-item">
-            <a href="{% url 'dashboard_responsable' %}" class="nav-link text-white"> fa-user-check">
-                   <i class="fas fa-user-check"></i> Responsable p&#233dagogique
-            </a>
-        </li>
-        {% endif %}
-    </ul>
-
-    <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-            <span class="nav-link text-white">
-                {{ request.user.username }}
-            </span>
-        </li>
-
-        <li class="nav-item">
-            <a href="" class="nav-link text-white">
-                <i class="fas fa-sign-out-alt"></i>Deconnexion
-            </a>
-        </li>
-    </ul>
-
+<body class="min-h-screen bg-base-200">
+    <div class="navbar bg-primary text-primary-content shadow-sm px-4 lg:px-8">
+        <div class="flex-1"><a href="{% if request.user.role == 'responsable' %}{% url 'dashboard_responsable' %}{% else %}{% url 'dashboard_enseignant' %}{% endif %}" class="text-lg font-bold">Gestion pédagogique</a></div>
+        <div class="dropdown dropdown-end">
+            <button class="btn btn-ghost btn-sm" tabindex="0">{{ request.user.username }}</button>
+            <ul tabindex="0" class="menu dropdown-content bg-base-100 text-base-content rounded-box z-10 mt-3 w-60 p-2 shadow">
+                {% if request.user.role == 'enseignant' %}
+                <li><a href="{% url 'dashboard_enseignant' %}">Tableau de bord</a></li>
+                <li><a href="{% url 'emarger' %}">Émarger</a></li>
+                <li><a href="{% url 'absence' %}">Absences</a></li>
+                <li><a href="{% url 'cahier' %}">Cahier de texte</a></li>
+                {% elif request.user.role == 'responsable' %}
+                <li><a href="{% url 'dashboard_responsable' %}">Tableau de bord</a></li>
+                <li><a href="{% url 'creer_module' %}">Créer un module</a></li>
+                <li><a href="{% url 'affecter_module' %}">Affecter un module</a></li>
+                <li><a href="{% url 'gestion_classes' %}">Classes et étudiants</a></li>
+                {% endif %}
+                <li><a class="text-error" href="{% url 'deconnexion' %}">Déconnexion</a></li>
+            </ul>
+        </div>
     </div>
-</nav>
-
-<div class="container-fluid">
-    {% block content%}
-    {% endblock %}
-</div>
-<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'vendor/js/sb-admin-2.min.js' %}"></script>
-
+    <main class="mx-auto max-w-7xl p-4 lg:p-8">
+        {% if messages %}{% for message in messages %}
+        <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} mb-5"><span>{{ message }}</span></div>
+        {% endfor %}{% endif %}
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>

@@ -1,56 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<h3 class="mb-4 text-gray-800">
-    Relever absences
-</h3>
-<div class="card shadow">
-    <div class="card-body">
-        <form action=""  method="get" class="mb-4" >
-            <div class="form-group">
-                <label for="">Classe</label>
-                <select name="classe" id="" class="form-control" onchange="this.form.submit()">
-                    <option value="">Choisir une classe</option>
-                    {% for c in classes %}
-                    <option value="{{ c.id }}"
-                        {% if selected_classe == c.id|stringformat:"s" %}selected{% endif %}> {{ c.filiere }} {{ c.niveau }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
-        <form action="" method="post" >
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="">Etudiant</label>
-                <select name="etudiant" id="" class="form-control">
-                    {% if etudiants %}
-                        {% for e in etudiants %}
-                        <option value="{{ e.id }}">
-                            {{ e.prenom }} {{ e.nom }}
-                        </option>
-                        {% endfor %}
-                    {% else %}
-                        <option value="" disabled selected>---Selectionnez une classe d'abord---</option>
-                    {% endif %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="">Date</label>
-                <input type="date" value="{{ today }}" class="form-control" name="date">
-            </div>
-
-            <!-- <div class="form-group">
-                <label for="">Motif</label>
-                <textarea name="motif" class="form-control" id="" rows="3"
-                placeholder="Absence non justifiee" required></textarea>
-            </div> -->
-
-            <button class="btn btn-danger mt-2">
-                <i class="fas fa-user-time"></i>Enregistrer l'absence
-            </button>
-        </form>
+<div class="mx-auto max-w-3xl">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Présences et absences</h1>
+        <p class="text-base-content/70">Sélectionnez une classe puis cochez les étudiants présents.</p>
     </div>
+    <section class="card bg-base-100 shadow">
+        <div class="card-body gap-6">
+            <form method="get">
+                <label class="form-control">
+                    <span class="label-text mb-1">Classe</span>
+                    <select name="classe" class="select select-bordered w-full" onchange="this.form.submit()">
+                        <option value="">Choisir une classe
+                        </option>
+                        {% for c in classes %}
+                        <option value="{{ c.id }}"
+                        {% if selected_classe == c.id|stringformat:'s' %}
+                        selected{% endif %}>
+                        {{ c.filiere }} {{ c.niveau }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+            {% if selected_classe %}
+            <div class="divider">
+            </div><form method="post" class="space-y-5">
+                {% csrf_token %}<input type="hidden" name="classe" value="{{ selected_classe }}">
+            <div>
+                <h2 class="mb-2 font-semibold">Liste des étudiants</h2>
+                <div class="max-h-96 overflow-y-auto rounded-box border border-base-300">
+                    {% for e in etudiants %}
+                <label class="flex cursor-pointer items-center gap-3 border-b border-base-200 p-3 last:border-0">
+                    <input type="checkbox" name="presents" value="{{ e.id }}" class="checkbox checkbox-primary" checked>
+                    <span>{{ e.prenom }} {{ e.nom }}</span>
+                    <span class="ml-auto badge badge-ghost">Présent</span>
+                </label>{% empty %}<p class="p-4 text-base-content/60">Aucun étudiant dans cette classe.</p>{% endfor %}
+            </div></div><div class="flex justify-end gap-2"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a><button class="btn btn-primary" type="submit">Enregistrer l’appel</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-info">
+            <span>Choisissez une classe pour afficher ses étudiants.</span>
+        </div><div class="flex justify-end"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a>
+        </div>{% endif %}</div>
+    </section>
 </div>
-
 {% endblock %}

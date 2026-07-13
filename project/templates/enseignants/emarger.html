@@ -1,40 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<h3 class="mb-4 text-center">
-    Faire un &#233margement
-</h3>
-
-<div class="card-shadow">
-    <div class="card-body">
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="">Enseignant</label>
-                <input type="text" class="form-control" name="enseignant" value="{{ enseignant.prenom }} {{ enseignant.nom }} " readonly>
-            </div>
-            <div class="form-group">
-                <label for="">Date</label>
-                <input type="date" class="form-control" name="date"  value="{{ jour|date:'Y-m-d' }}"  >
-            </div>
-            <div class="form-group">
-                <label for="">Heure d'arriv&#233e</label>
-                <input type="time" class="form-control" name="arrivee" required>
-            </div>
-            <div class="form-group">
-                <label for="">Heure de d&#233part</label>
-                <input type="time" class="form-control" name="depart" required>
-            </div>
-            <div class="form-group">
-                <label for="">Module</label>
-                <input type="text" class="form-control">
-            </div>
-            
-            <button class="btn btn-success ">Valider</button>
-            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-danger">Annuler</a>
-        </form>
-        
+<div class="mx-auto max-w-xl">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Faire un émargement
+        </h1>
+        <p class="text-base-content/70">{{ jour|date:'d/m/Y' }}</p>
     </div>
-</div>
-
+    <section class="card bg-base-100 shadow">
+        <form method="post" class="card-body gap-5">{% csrf_token %}
+            <label class="form-control">
+                <span class="label-text mb-1">Enseignant</span>
+                <input class="input input-bordered w-full" value="{{ enseignant.prenom }} {{ enseignant.nom }}" readonly>
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Module</span>
+                <select name="module" class="select select-bordered w-full">{% for module in modules %}
+                    <option value="{{ module.id }}">{{ module.nom }}
+                    </option>
+                    {% empty %}
+                    <option value="">Aucun module affecté</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <label class="form-control">
+                    <span class="label-text mb-1">Heure d’arrivée</span>
+                    <input type="time" name="arrivee" class="input input-bordered w-full" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text mb-1">Heure de départ</span>
+                    <input type="time" name="depart" class="input input-bordered w-full" required></label></div><div class="card-actions justify-end"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a><button class="btn btn-primary">Valider</button></div></form></section></div>
 {% endblock %}

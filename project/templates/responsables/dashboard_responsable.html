@@ -1,92 +1,19 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard responsable p&#233dagogique</title>
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
-</head>
-<body>
-    <nav class="navbar-navbar-light bg-white shadow mb-4">
-        <span class="navbar-brand">
-            {{ request.user.username }}
-        </span>
-        <a href="" class="btn btn-danger">
-            <i class="fas fa-sign-out-alt">
-                Deconnexion
-            </i>
-        </a>
-    </nav>
-    <div class="container-fluid">
-
-        <div class="card shadow mb-4">
-            <div class="card-header bg-primary text-white">
-                Emargements r&#233cents
-            </div>
-            <div class="card-body">
-                <table class="table-striped">
-                    <tr>
-                        <th>Enseignant</th>
-                        <th>Date</th>
-                        <th>Heure d'&#223rriv&#233e</th>
-                        <th>Heure de d&#233part</th>
-                    </tr>
-                    {% for e in emargements %}
-                    <tr>
-                        <td>{{ e.enseignant }}</td>
-                        <td>{{ e.date }}</td>
-                        <td>{{ e.arrivee }}</td>
-                        <td>{{ e.depart }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4">Aucun &#233margment</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-
-        
-        <div class="card shadow">
-            <div class="card-header bg-danger text-white">
-            Absences
-            </div>
-            <div class="card-body">
-                <table class="table-striped">
-                    <tr>
-                        <th>Etudiant</th>
-                        <th>Date</th>
-                        <th>Motif</th>
-                        <th>Statut</th>
-                        <th>Action</th>
-                    </tr>
-                    {% for a in absences %}
-                    <tr>
-                        <td>{{ a.etudiant }}</td>
-                        <td>{{ a.date }}</td>
-                        <td>{{ a.motif }}</td>
-                        <td>
-                            {% if a.justifie %}
-                            <span class="badge badge-success">Justifi&#233e</span>
-                            {% else %}
-                            <span class="badge badge-danger">Non justifi&#233e</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if not a.justifie %}
-                            <a href="{% url 'justifier' a.id %}" class="btn btn-success">
-                                Justifier
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div><h1 class="text-3xl font-bold">Tableau de bord responsable</h1><p class="text-base-content/70">Suivi des modules et des activités pédagogiques.</p></div>
+    <div class="flex gap-2"><a class="btn btn-primary" href="{% url 'creer_module' %}">Créer un module</a><a class="btn btn-secondary" href="{% url 'affecter_module' %}">Nouvelle affectation</a></div>
+</div>
+<div class="stats stats-vertical w-full bg-base-100 shadow md:stats-horizontal mb-8">
+    <div class="stat"><div class="stat-title">Modules</div><div class="stat-value text-primary">{{ modules_count }}</div></div>
+    <div class="stat"><div class="stat-title">Enseignants</div><div class="stat-value text-secondary">{{ enseignants_count }}</div></div>
+    <div class="stat"><div class="stat-title">Affectations</div><div class="stat-value text-accent">{{ affectations_count }}</div></div>
+</div>
+<section class="card bg-base-100 shadow mb-8"><div class="card-body"><h2 class="card-title">Affectations récentes</h2><div class="overflow-x-auto"><table class="table"><thead><tr><th>Module</th><th>Volume</th><th>Enseignant</th><th>Année</th></tr></thead><tbody>{% for affectation in affectations %}<tr><td>{{ affectation.module.nom }}</td><td>{{ affectation.module.volHoraire }} h</td><td>{{ affectation.enseignant }}</td><td>{{ affectation.annee_universitaire }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-base-content/60">Aucune affectation enregistrée.</td></tr>{% endfor %}</tbody></table></div></div></section>
+<div class="grid gap-8 lg:grid-cols-2">
+<section class="card bg-base-100 shadow"><div class="card-body"><h2 class="card-title">Émargements récents</h2><div class="overflow-x-auto"><table class="table table-sm"><thead><tr><th>Enseignant</th><th>Module</th><th>Date</th><th>Horaires</th></tr></thead><tbody>{% for e in emargements %}<tr><td>{{ e.enseignant }}</td><td>{{ e.module|default:'—' }}</td><td>{{ e.date }}</td><td>{{ e.arrivee }} – {{ e.depart }}</td></tr>{% empty %}<tr><td colspan="4">Aucun émargement.</td></tr>{% endfor %}</tbody></table></div></div></section>
+<section class="card bg-base-100 shadow"><div class="card-body"><h2 class="card-title">Absences récentes</h2><div class="overflow-x-auto"><table class="table table-sm"><thead><tr><th>Étudiant</th><th>Date</th>
+    <th>Statut</th></tr></thead><tbody>{% for a in absences %}<tr><td>{{ a.etudiant }}</td><td>{{ a.date }}</td>
+    <td>{% if a.justifie %}<span class="badge badge-success">Justifiée</span>{% else %}<span class="badge badge-error">Non justifiée</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="text-center">Aucune absence.</td></tr>{% endfor %}</tbody></table></div></div></section>
+</div>
+{% endblock %}

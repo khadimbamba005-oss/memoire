@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Absence, Enseignant, Etudiant, Emargement, User, AbstractUser, Classe ,Cahier , Responsable
+from .models import Absence, Enseignant, Etudiant, Emargement, User, Classe, Cahier
 
 admin.site.register(User)
 
@@ -8,12 +8,6 @@ admin.site.register(User)
 class EnseignantAdmin(admin.ModelAdmin):
     list_display = ('nom', 'prenom', 'email' , 'telephone')
     search_fields = ('nom', 'prenom')
-
-@admin.register(Responsable)
-class ResponsableAdmin(admin.ModelAdmin):
-    list_display = ('prenom', 'nom' )
-    list_filter = ('nom',)
-
 
 @admin.register(Classe)
 class ClasseAdmin(admin.ModelAdmin):
@@ -33,7 +27,7 @@ class EmargmentAdmin(admin.ModelAdmin):
 
 @admin.register(Absence)
 class AbsenceAdmin(admin.ModelAdmin):
-    list_display = ('etudiant', 'date', 'motif')
+    list_display = ('etudiant', 'date')
     list_filter = ('date','etudiant')
 
 @admin.register(Cahier)
