@@ -109,10 +109,14 @@ class Affectation(models.Model):
     enseignant = models.ForeignKey(Enseignant , on_delete=models.CASCADE)
     module = models.ForeignKey(Module,on_delete=models.CASCADE)
     annee_universitaire = models.CharField(max_length=20,default="2025-2026" , blank=True)
+    classe = models.ForeignKey(
+        Classe,on_delete=models.CASCADE, blank=True ,
+        default=7
+    )
 
 
     class Meta:
-        unique_together = ("enseignant", "module", "annee_universitaire")
+        unique_together = ("enseignant", "module", "annee_universitaire","classe")
     
     def __str__(self):
         return f"{self.enseignant}  {self.module}"
