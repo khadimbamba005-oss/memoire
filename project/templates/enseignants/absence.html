@@ -2,14 +2,15 @@
 {% block content %}
 <div class="mx-auto max-w-3xl">
     <div class="mb-6">
-        <h1 class="text-3xl font-bold">Présences et absences</h1>
-        <p class="text-base-content/70">Sélectionnez une classe puis cochez les étudiants présents.</p>
+        <p class="text-base-content/70">Appel </p>
     </div>
     <section class="card bg-base-100 shadow">
         <div class="card-body gap-6">
             <form method="get">
                 <label class="form-control">
-                    <span class="label-text mb-1">Classe</span>
+                    <span class="label-text mb-1">
+
+                    </span>
                     <select name="classe" class="select select-bordered w-full" onchange="this.form.submit()">
                         <option value="">Choisir une classe
                         </option>
@@ -24,25 +25,74 @@
             </form>
             {% if selected_classe %}
             <div class="divider">
-            </div><form method="post" class="space-y-5">
-                {% csrf_token %}<input type="hidden" name="classe" value="{{ selected_classe }}">
-            <div>
-                <h2 class="mb-2 font-semibold">Liste des étudiants</h2>
+            </div>
+
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+                <input type="hidden" name="classe" value="{{ selected_classe }}">
+
+            <div class="overflow-x-auto">
                 <div class="max-h-96 overflow-y-auto rounded-box border border-base-300">
                     {% for e in etudiants %}
-                <label class="flex cursor-pointer items-center gap-3 border-b border-base-200 p-3 last:border-0">
-                    <input type="checkbox" name="presents" value="{{ e.id }}" class="checkbox checkbox-primary" checked>
-                    <span>{{ e.prenom }} {{ e.nom }}</span>
-                    <span class="ml-auto badge badge-ghost">Présent</span>
-                </label>{% empty %}<p class="p-4 text-base-content/60">Aucun étudiant dans cette classe.</p>{% endfor %}
-            </div></div><div class="flex justify-end gap-2"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a><button class="btn btn-primary" type="submit">Enregistrer l’appel</button>
+                <label class="flex cursor-pointer items-center gap-3 border-b border-base-200 p-3 last:border-0" student-row>
+                    <input type="checkbox" name="presents" 
+                    value="{{ e.id }}" class="checkbox checkbox-primary presence-checkbox" checked
+                    
+                    onchange="updateRowStatus(this)">
+
+                    <span class="font-medium">{{ e.matricule }} {{ e.prenom }} {{ e.nom }}</span>
+                    <div class="ml-auto flex items-center gap-2 justification-zone opacity-30 pointer-events-none">
+                        <span class="text-xs text-base-content/60">Justifié ?</span>
+
+                        <input type="checkbox" class="checkbox cheeckbox-warning checkbox-sm justification-checkbox">
+                    </div>
+                    <span class="badge badge-success text-success-content status-badge min-w- [75px]text-center" >Present</span>
+                </label>
+                {% empty %}<p class="p-4 text-base-content/60">Aucun étudiant dans cette classe.</p>{% endfor %}
+            </div>
+        </div>
+        <div class="flex justify-end gap-2">
+            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a>
+            <button class="btn btn-primary" type="submit">Enregistrer l’appel</button>
             </div>
         </form>
         {% else %}
         <div class="alert alert-info">
-            <span>Choisissez une classe pour afficher ses étudiants.</span>
-        </div><div class="flex justify-end"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a>
-        </div>{% endif %}</div>
+            <span>Choisissez une classe pour afficher ses étudiants.
+            </span>
+        </div>
+        <div class="flex justify-end">
+            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a>
+        </div>
+        {% endif %}
+
+        <script>
+
+            function updateRowStatus(checkbox){
+                const row = checkbox.closest('.student');
+                const badge = row.querySelector('.status-badge');
+                const justificationZone = row.querySelector('.justification-zone');
+                const justificationCheckbox = row.querySelector('.justification-checkbox');
+
+                if(checkbox.checked){
+                    badge.textContent = "Present";
+
+                    badge.className = "badge badge-success text-succes-content status-badge min-w-[75px] text-center"
+
+                    // Blocage et decocher la case de justification
+
+                    justificationCheckbox.checked = false;
+                    justificationZone.classList.add('opacity-30','pointer-events-none');
+                }
+                else {
+                    badge.textContent = "Absent";
+                    badge.className = "badge badge-error text-error-content status-badge min-w-[75px] text-center";
+
+                    justificationZone.classList.remove.opacity('opcaity-30', 'pointer-events-none')
+                }
+            }
+        </script>
+    </div>
     </section>
 </div>
 {% endblock %}

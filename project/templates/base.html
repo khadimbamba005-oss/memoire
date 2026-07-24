@@ -1,39 +1,176 @@
 {% load static %}
 <!doctype html>
 <html lang="fr" data-theme="corporate">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gestion pédagogique</title>
-    <link href="{% static 'vendor/daisyui/daisyui.css' %}" rel="stylesheet" type="text/css">
+    <link
+      href="{% static 'vendor/daisyui/daisyui.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
     <script src="{% static 'vendor/daisyui/tailwind-browser.js' %}"></script>
-</head>
-<body class="min-h-screen bg-base-200">
+  </head>
+  <body class="min-h-screen bg-base-200">
     <div class="navbar bg-primary text-primary-content shadow-sm px-4 lg:px-8">
-        <div class="flex-1"><a href="{% if request.user.role == 'responsable' %}{% url 'dashboard_responsable' %}{% else %}{% url 'dashboard_enseignant' %}{% endif %}" class="text-lg font-bold">Gestion pédagogique</a></div>
-        <div class="dropdown dropdown-end">
-            <button class="btn btn-ghost btn-sm" tabindex="0">{{ request.user.username }}</button>
-            <ul tabindex="0" class="menu dropdown-content bg-base-100 text-base-content rounded-box z-10 mt-3 w-60 p-2 shadow">
-                {% if request.user.role == 'enseignant' %}
-                <li><a href="{% url 'dashboard_enseignant' %}">Tableau de bord</a></li>
-                <li><a href="{% url 'emarger' %}">Émarger</a></li>
-                <li><a href="{% url 'absence' %}">Absences</a></li>
-                <li><a href="{% url 'cahier' %}">Cahier de texte</a></li>
-                {% elif request.user.role == 'responsable' %}
-                <li><a href="{% url 'dashboard_responsable' %}">Tableau de bord</a></li>
-                <li><a href="{% url 'creer_module' %}">Créer un module</a></li>
-                <li><a href="{% url 'affecter_module' %}">Affecter un module</a></li>
-                <li><a href="{% url 'gestion_classes' %}">Classes et étudiants</a></li>
-                {% endif %}
-                <li><a class="text-error" href="{% url 'deconnexion' %}">Déconnexion</a></li>
-            </ul>
-        </div>
+      <div class="flex-1">
+        <a
+          href="{% if request.user.role == 'responsable' %}{% url 'dashboard_responsable' %}{% else %}{% url 'dashboard_enseignant' %}{% endif %}"
+          class="text-lg font-bold"
+          >Gestion pédagogique</a
+        >
+      </div>
+
+      <!-- Conteneur principal alignant les éléments sur la même ligne -->
+      <div class="flex items-center gap-4">
+        <!-- Nom d'utilisateur -->
+        <span class="font-semibold text-base-content text-sm">
+          {{ request.user.username }}
+        </span>
+
+        <!-- Bouton Déconnexion avec son icône -->
+        <a
+          class="btn btn-error btn-sm flex items-center gap-1.5"
+          href="{% url 'deconnexion' %}"
+        >
+          <!-- Icône de déconnexion SVG -->
+          <svg
+            xmlns="http://w3.org"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="size-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+            />
+          </svg>
+          <span>Déconnexion</span>
+        </a>
+      </div>
     </div>
+
+    <div class="navbar bg-base-100 shadow-md px-4 rounded-box w-full">
+  
+  <!-- 1. MODE MOBILE (Masqué sur PC) -->
+  <div class="navbar-start lg:hidden">
+    <div class="dropdown">
+      <button tabindex="0" class="btn btn-ghost btn-square" aria-label="Menu">
+        <svg xmlns="http://w3.org" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow border border-base-200 gap-1">
+        {% if request.user.role == 'enseignant' %}
+          <li><a href="{% url 'dashboard_enseignant' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg> Tableau de bord</a></li>
+          <li><a href="{% url 'emarger' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> Émarger</a></li>
+          <li><a href="{% url 'absence' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Absences</a></li>
+          <li><a href="{% url 'cahier' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> Cahier de texte</a></li>
+        {% elif request.user.role == 'responsable' %}
+          <li><a href="{% url 'dashboard_responsable' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg> Tableau de bord</a></li>
+          <li><a href="{% url 'creer_module' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg> Créer un module</a></li>
+          <li><a href="{% url 'affecter_module' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg> Affecter un module</a></li>
+          <li><a href="{% url 'gestion_classes' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> Classes et étudiants</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- 2. MODE ORDINATEUR (Affiche les icônes de façon stricte) -->
+  <div class="navbar-start hidden lg:flex flex-1">
+    <ul class="menu menu-horizontal px-1 gap-1">
+      {% if request.user.role == 'enseignant' %}
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'dashboard_enseignant' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+            </svg>
+            <span>Tableau de bord</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'emarger' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Émarger</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'absence' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>Absences</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'cahier' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>Cahier de texte</span>
+          </a>
+        </li>
+      {% elif request.user.role == 'responsable' %}
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'dashboard_responsable' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+            </svg>
+            <span>Tableau de bord</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'creer_module' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Créer un module</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'affecter_module' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span>Affecter un module</span>
+          </a>
+        </li>
+        <li>
+          <a class="font-medium flex items-center gap-2" href="{% url 'gestion_classes' %}">
+            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Classes et étudiants</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- 3. FIN DE LA BARRE -->
+  <div class="navbar-end">
+    <div class="badge badge-primary badge-outline font-semibold px-3 py-3 text-xs capitalize">
+      {{ request.user.role }}
+    </div>
+  </div>
+</div>
+
+
     <main class="mx-auto max-w-7xl p-4 lg:p-8">
-        {% if messages %}{% for message in messages %}
-        <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} mb-5"><span>{{ message }}</span></div>
-        {% endfor %}{% endif %}
-        {% block content %}{% endblock %}
+      {% if messages %}{% for message in messages %}
+      <div
+        role="alert"
+        class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} mb-5"
+      >
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}{% endif %} {% block content %}{% endblock %}
     </main>
-</body>
+  </body>
 </html>

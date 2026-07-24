@@ -64,6 +64,9 @@ class Etudiant(models.Model):
     
 class Module(models.Model):
     nom = models.CharField(max_length=30, null=True)
+    nhCm = models.IntegerField(null = True)
+    nhTp = models.IntegerField(null = True)
+    nhTd = models.IntegerField(null = True)
     volHoraire = models.IntegerField(null=True)
     
 
@@ -76,6 +79,7 @@ class Emargement(models.Model):
     arrivee = models.TimeField()
     depart = models.TimeField()
     module = models.ForeignKey(Module , on_delete=models.CASCADE , blank=True , null=True )
+    classe = models.ForeignKey(Classe , on_delete=models.CASCADE , null=True)
     
 
     def __str__(self):

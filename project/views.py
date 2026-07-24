@@ -110,19 +110,85 @@ def dashboard_responsable(request):
     if request.user.role != 'responsable':
         return HttpResponseForbidden("Cette page est réservée aux responsables pédagogiques.")
     
-    emargements = Emargement.objects.select_related('enseignant', 'module').order_by('-date')[:10]
-    absences = Absence.objects.select_related('etudiant').order_by('-date')[:10]
-    affectations = Affectation.objects.select_related('enseignant', 'module').order_by('module__nom', 'enseignant__nom')
+    type_operation = request.GET.get("type")
+    enseignant_id = request.GET.get("enseignant")
+    classe_id = request.GET.get("classe")
+    date_debut = request.GET.get("date_debut")
+    date_fin = request.GET.get("date_fin")
 
-    return render(request,'responsables/dashboard_responsable.html',{
-        'emargements':emargements,
-        'absences':absences,
-        'modules_count': Module.objects.count(),
-        'enseignants_count': Enseignant.objects.count(),
-        'affectations_count': affectations.count(),
-        'affectations': affectations[:10],
-    })
+    enseignants = Enseignant.objects.all()
+    classes = Classe.objects.all()
 
+    resultat = []
+
+    if type_operation == "emargement":
+        resultat = Emargement.objects.selected_related(
+            "enseignant",
+            "module"
+        )
+        if enseignant_id:
+            resultat = resultat.filter(
+                enseignant_id = enseignant_id
+            )
+
+        if date_debut and date_fin:
+            resultat = resultat.filter(
+                date__range = [date_debut,date_fin]
+            )
+
+    elif type_operation == "absence":
+        resultat = Absence.objects.select_related(
+            "etudiant",
+            "etudiant__filiere"
+        )
+        if classe_id:
+            resultat = resultat.filter(
+                etudiant__filiere_id = classe_id
+            )
+        if date_debut and date_fin:
+            resultat = resultat.filter(
+            date__range = [date_debut,date_fin]
+                    )
+            
+    elif type_operation == "cahier":
+        resultat = Cahier.objects.filter(
+            "enseignant",
+            "module",
+            "classe"
+        )
+
+        if enseignant_id:
+            resultat = resultat.filter(
+                enseignant_id = enseignant_id
+            )
+
+        if date_debut and date_fin:
+            resultat = resultat.filter(
+            date__range = [date_debut,date_fin]
+            )
+
+    context = {
+        "modules_count":Module.objects.count(),
+        "enseignants_count":Enseignant.objects.count(),
+        "affectations_count":Affectation.objects.count(),
+
+        "enseignants":enseignants,
+        "classes":classes,
+
+        "type_operation":type_operation,
+        "enseignant_id":enseignant_id,
+        "classe_id":classe_id,
+        "date_debut":date_debut,
+        "date_fin":date_fin,
+
+        "resultat":resultat
+    }
+
+    return render(
+        request,
+        'responsables/dashboard_responsable.html',
+        context
+    )
 
 @login_required
 def gestion_classes(request):
@@ -187,7 +253,7 @@ def creer_module(request):
     return render(request, 'responsables/creer_module.html')
     
 def emarger(request):
-
+    
     enseignant = Enseignant.objects.get(user=request.user)
     jour = date.today()
     modules = Module.objects.filter(affectation__enseignant=enseignant).distinct()

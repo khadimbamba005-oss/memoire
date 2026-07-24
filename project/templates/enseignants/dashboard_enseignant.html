@@ -1,6 +1,45 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="mb-8"><h1 class="text-3xl font-bold">Mon tableau de bord</h1><p class="text-base-content/70">Suivez la progression de vos enseignements.</p></div>
-<div class="stats stats-vertical w-full bg-base-100 shadow md:stats-horizontal mb-8"><div class="stat"><div class="stat-title">Modules enseignés</div><div class="stat-value text-primary">{{ modules_data|length }}</div></div><div class="stat"><div class="stat-title">Activité récente</div><div class="stat-desc">Cours des 7 derniers jours</div></div></div>
-<section class="card bg-base-100 shadow"><div class="card-body"><h2 class="card-title">Progression de mes modules</h2>{% for m in modules_data %}<div class="mt-4"><div class="mb-2 flex justify-between"><span class="font-medium">{{ m.nom }}</span><span class="text-sm text-base-content/70">{{ m.heures }} h / {{ m.volHoraire }} h</span></div><progress class="progress progress-success w-full" value="{{ m.pourcentage }}" max="100"></progress><p class="mt-1 text-right text-xs">{{ m.pourcentage|floatformat:1 }} %</p></div>{% empty %}<p class="py-8 text-center text-base-content/60">Aucun module ne vous est encore affecté.</p>{% endfor %}</div></section>
+{% extends 'base.html' %} {% block content %}
+<div class="mb-8">
+  <h1 class="text-3xl font-bold">Mon tableau de bord</h1>
+  <p class="text-base-content/70">
+    Suivez la progression de vos enseignements.
+  </p>
+</div>
+<div
+  class="stats stats-vertical w-full bg-base-100 shadow md:stats-horizontal mb-8"
+>
+  <div class="stat">
+    <div class="stat-title">Modules enseignés</div>
+    <div class="stat-value text-primary">{{ modules_data|length }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">Activité récente</div>
+    <div class="stat-desc">Cours des 7 derniers jours</div>
+  </div>
+</div>
+<section class="card bg-base-100 shadow">
+  <div class="card-body">
+    <h2 class="card-title">Progression de mes modules</h2>
+    {% for m in modules_data %}
+    <div class="mt-4">
+      <div class="mb-2 flex justify-between">
+        <span class="font-medium">{{ m.nom }}</span
+        ><span class="text-sm text-base-content/70"
+          >{{ m.heures }} h / {{ m.volHoraire }} h</span
+        >
+      </div>
+      <progress
+        class="progress progress-success w-full"
+        value="{{ m.pourcentage }}"
+        max="100"
+      ></progress>
+      <p class="mt-1 text-right text-xs">{{ m.pourcentage|floatformat:1 }} %</p>
+    </div>
+    {% empty %}
+    <p class="py-8 text-center text-base-content/60">
+      Aucun module ne vous est encore affecté.
+    </p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

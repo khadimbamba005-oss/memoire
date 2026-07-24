@@ -10,12 +10,13 @@
   </div>
   <div class="flex gap-2">
     <a class="btn btn-primary" href="{% url 'creer_module' %}"
-      >Créer un module</a
+      >Gestion des modules </a
     ><a class="btn btn-secondary" href="{% url 'affecter_module' %}"
-      >Nouvelle affectation</a
+      >Gestion des affectations</a
     >
   </div>
 </div>
+<!-- les statistiques -->
 <div
   class="stats stats-vertical w-full bg-base-100 shadow md:stats-horizontal mb-8"
 >
@@ -32,104 +33,186 @@
     <div class="stat-value text-accent">{{ affectations_count }}</div>
   </div>
 </div>
-<section class="card bg-base-100 shadow mb-8">
+
+<!-- Les options a afficher -->
+<div class="card bg-base-100 shadow-xl mb-8">
   <div class="card-body">
-    <h2 class="card-title">Affectations récentes</h2>
-    <div class="overflow-x-auto">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Volume</th>
-            <th>Enseignant</th>
-            <th>Année</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for affectation in affectations %}
-          <tr>
-            <td>{{ affectation.module.nom }}</td>
-            <td>{{ affectation.module.volHoraire }} h</td>
-            <td>{{ affectation.enseignant }}</td>
-            <td>{{ affectation.annee_universitaire }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="4" class="text-center text-base-content/60">
-              Aucune affectation enregistrée.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <form method="get">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="label">
+            <span class="label-text"> Operation </span>
+          </label>
+          <select
+            name="type"
+            class="select selected-bordered w-full"
+            onchange="this.form.submit()"
+          >
+            <option value="">Choisir</option>
+
+            <option value="emargement" {% if type_operation == "emargement" %} selected{% endif %}>
+              Emargements
+            </option>
+
+            <option value="absence" {% if type_operation == "absence" %} selected{% endif %}>
+               Absences
+            </option>
+            <option value="cahier" {% if type_operation == "cahier" %} selected{% endif %}>
+               Cahiers
+              de texte
+            </option>
+          </select>
+          <!-- enseignant -->
+
+          {% if type_operation == "emargement" or type_operation == "cahier" %}
+
+          <div>
+            <label class="label">
+              <span class="label-text"> Enseignant </span>
+            </label>
+
+            <select name="enseignant" class="select select-bordered w-full">
+              <option value="">Tous</option>
+              {% for e in enseignants %}
+              <option value="{{ e.id }}"
+              {% if enseignant_id == e.id|stringformat:"s" %}selected{% endif %}
+                 >
+                 {e.prenom} {e.nom}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <!-- Classe -->
+
+          {% if operation_type == "absence" %}
+
+          <div>
+            <label class="label">
+              <span class="text-label"> Classe </span>
+            </label>
+            <select name="classe" class="select select-bordered w-full">
+              <option value="">Toutes</option>
+
+              {% for c in classes %}
+
+              <option value="{{c.id}}"{% if classe_id == c.id|stringformat:"s" %} selected {% endif %} >
+                {{c}}
+              </option>
+              {% endfor %}
+            </select>
+            {% endif %}
+          </div>
+
+          <!-- date -->
+
+          <div>
+            <label class="label">
+              <span class="label-text"> Date de debut </span>
+            </label>
+            <input
+              type="date"
+              class="input input-bordered w-full"
+              name="date_debut"
+              value="{{ date_debut }}"
+            />
+          </div>
+
+          <div>
+            <label class="label">
+              <span class="label-text"> Date de fin </span>
+            </label>
+            <input
+              type="date"
+              class="input input-bordered w-full"
+              name="date_fin"
+              value="{{date_fin}}"
+            />
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
-</section>
-<div class="grid gap-8 lg:grid-cols-2">
-  <section class="card bg-base-100 shadow">
-    <div class="card-body">
-      <h2 class="card-title">Émargements récents</h2>
-      <div class="overflow-x-auto">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Enseignant</th>
-              <th>Module</th>
-              <th>Date</th>
-              <th>Horaires</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for e in emargements %}
-            <tr>
-              <td>{{ e.enseignant }}</td>
-              <td>{{ e.module|default:'—' }}</td>
-              <td>{{ e.date }}</td>
-              <td>{{ e.arrivee }} – {{ e.depart }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4">Aucun émargement.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-  <section class="card bg-base-100 shadow">
-    <div class="card-body">
-      <h2 class="card-title">Absences récentes</h2>
-      <div class="overflow-x-auto">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Étudiant</th>
-              <th>Date</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for a in absences %}
-            <tr>
-              <td>{{ a.etudiant }}</td>
-              <td>{{ a.date }}</td>
-              <td>
-                {% if a.justifie %}<span class="badge badge-success"
-                  >Justifiée</span
-                >{% else %}<span class="badge badge-error">Non justifiée</span
-                >{% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4" class="text-center">Aucune absence.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 </div>
+
+{% if type_operation == "emargement" %}
+<table class="table table-zebra">
+  <thead>
+    <tr>
+      <th>Enseignant</th>
+      <th>Date</th>
+      <th>Arrive</th>
+      <th>Depart</th>
+      <th>Classe</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for e in resultat %}
+    <tr>
+      <td>{{ e.enseignant }}</td>
+      <td>{{ e.module}}</td>
+      <td>{{ e.date }}</td>
+      <td>{{ e.arrivee }}</td>
+      <td>{{ e.depart }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif%}
+
+{% if type_operation == "absence" %}
+<table class="table table-zebra">
+  <thead>
+    <tr>
+      <th>Etudiant</th>
+      <th>Date</th>
+      <th>Justifie</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for a in resultat %}
+    <tr>
+      <td>{{ a.etudiant.prenom }} {{ a.etudiant.nom}}</td>
+      <td>{{a.date}}</td>
+      <td>
+        {% if a.justifie %}
+        <span class="badge bagde-success text-success-content">Justifiee</span>
+        {% else %}
+        <span class="badge badge-warning text-warning-content">
+          Non justifiee
+        </span>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if type_operation == "cahier" %}
+
+<table class="table table-zebra">
+  <thead>
+    <tr>
+      <th>Classe</th>
+      <th>Date</th>
+      <th>Module</th>
+      <th>Contenu</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for c in resultat %}
+    <tr>
+      <td>{{ c.classe }}</td>
+      <td>{{ c.date }}</td>
+      <td>{{ c.contenu|linebreaksbr }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endblock %}
