@@ -1,0 +1,25 @@
+name: Deploiement continu avec pythonanywhere
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connexion SSH et deploiement
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PA_HOST }}
+          username: ${{ secrets.PA_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.PA_USERNAME }}/memoire
+            git pull origin main
+            source /home/${{ secrets.PA_USERNAME}}/.virtualenvs/env/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collecstatic --noinput
+            touch /var/www/${{ secrets.PA_USERNAME}}_pythonanywhere_com_wsgi.py
