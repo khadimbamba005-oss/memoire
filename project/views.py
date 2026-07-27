@@ -104,17 +104,16 @@ def dashboard_enseignant(request):
                      
                   })
 
-
 @login_required
 def dashboard_responsable(request):
     if request.user.role != 'responsable':
         return HttpResponseForbidden("Cette page est réservée aux responsables pédagogiques.")
     
-    type_operation = request.GET.get("type")
-    enseignant_id = request.GET.get("enseignant")
-    classe_id = request.GET.get("classe")
-    date_debut = request.GET.get("date_debut")
-    date_fin = request.GET.get("date_fin")
+    type_operation = request.GET.get("type") or None
+    enseignant_id = request.GET.get("enseignant") or None
+    classe_id = request.GET.get("classe") or None
+    date_debut = request.GET.get("date_debut") or None
+    date_fin = request.GET.get("date_fin") or None
 
     enseignants = Enseignant.objects.all()
     classes = Classe.objects.all()
@@ -122,50 +121,57 @@ def dashboard_responsable(request):
     resultat = []
 
     if type_operation == "emargement":
-        resultat = Emargement.objects.selected_related(
+        resultat = Emargement.objects.select_related(
             "enseignant",
-            "module"
-        )
+            "module",
+            "classe"
+        ).all()
         if enseignant_id:
             resultat = resultat.filter(
                 enseignant_id = enseignant_id
             )
 
-        if date_debut and date_fin:
+        if date_debut:
             resultat = resultat.filter(
-                date__range = [date_debut,date_fin]
+                date__gte=date_debut
             )
+        if date_fin:
+            resultat = resultat.filter(date__lte=date_fin)
 
     elif type_operation == "absence":
         resultat = Absence.objects.select_related(
             "etudiant",
             "etudiant__filiere"
-        )
+        ).all()
         if classe_id:
             resultat = resultat.filter(
                 etudiant__filiere_id = classe_id
             )
-        if date_debut and date_fin:
-            resultat = resultat.filter(
-            date__range = [date_debut,date_fin]
-                    )
+        if date_debut:
+            
+            resultat = resultat.filter(date__gte=date_debut)
+                    
+        if date_fin:
+            resultat = resultat.filter(date__lte=date_fin)
             
     elif type_operation == "cahier":
-        resultat = Cahier.objects.filter(
+        resultat = Cahier.objects.select_related(
             "enseignant",
             "module",
             "classe"
-        )
+        ).all()
 
         if enseignant_id:
             resultat = resultat.filter(
                 enseignant_id = enseignant_id
             )
 
-        if date_debut and date_fin:
+        if date_debut:
             resultat = resultat.filter(
-            date__range = [date_debut,date_fin]
+            date__gte=date_debut
             )
+        if date_fin:
+            resultat = resultat.filter(date__lte =date_fin)
 
     context = {
         "modules_count":Module.objects.count(),
@@ -175,12 +181,11 @@ def dashboard_responsable(request):
         "enseignants":enseignants,
         "classes":classes,
 
-        "type_operation":type_operation,
-        "enseignant_id":enseignant_id,
-        "classe_id":classe_id,
-        "date_debut":date_debut,
-        "date_fin":date_fin,
-
+        "type_operation":type_operation or "",
+        "enseignant_id":enseignant_id or "",
+        "classe_id":classe_id or "",
+        "date_debut":date_debut or "",
+        "date_fin":date_fin or "",
         "resultat":resultat
     }
 

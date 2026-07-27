@@ -39,6 +39,7 @@ class Enseignant(models.Model):
         return f"{self.prenom} {self.nom}"
     
 class Classe(models.Model):
+    code = models.CharField(max_length=10, blank=True)
     filiere = models.CharField(max_length=20)
     niveau = models.CharField(max_length=20)
 

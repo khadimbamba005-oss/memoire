@@ -8,13 +8,7 @@
       Suivi des modules et des activités pédagogiques.
     </p>
   </div>
-  <div class="flex gap-2">
-    <a class="btn btn-primary" href="{% url 'creer_module' %}"
-      >Gestion des modules </a
-    ><a class="btn btn-secondary" href="{% url 'affecter_module' %}"
-      >Gestion des affectations</a
-    >
-  </div>
+  
 </div>
 <!-- les statistiques -->
 <div
@@ -35,184 +29,255 @@
 </div>
 
 <!-- Les options a afficher -->
-<div class="card bg-base-100 shadow-xl mb-8">
+<div class="card bg-base-100 shadow-lg border border-base-200 mb-6 transition-all duration-300">
   <div class="card-body">
-    <form method="get">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <h2 class="card-title mb-4 flex-items gap-2 text-xl font-semeibold">
+      <i class="fa fa-filter text-primary">
+        Filtres
+      </i>
+    </h2>
+
+    <!-- Formulaire pour creer le filtre -->
+
+    <form method="get" id="filtreForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
         <div>
-          <label class="label">
-            <span class="label-text"> Operation </span>
+          <label class="label pt-0">
+            <span class="label-text font-medium text-base-content/80">Operation</span>
           </label>
-          <select
-            name="type"
-            class="select selected-bordered w-full"
-            onchange="this.form.submit()"
-          >
+
+          <select name="type" id="typeOperation" class="select select-bordered w-full focus:select-primary transition-all">
             <option value="">Choisir</option>
-
-            <option value="emargement" {% if type_operation == "emargement" %} selected{% endif %}>
-              Emargements
-            </option>
-
-            <option value="absence" {% if type_operation == "absence" %} selected{% endif %}>
-               Absences
-            </option>
-            <option value="cahier" {% if type_operation == "cahier" %} selected{% endif %}>
-               Cahiers
-              de texte
-            </option>
+            <option value="emargement" {% if type_operation == "emargement" %}selected{% endif %}>Emargements</option>
+            <option value="cahier" {% if type_operation == "cahier" %}selected {% endif %}>Cahiers</option>
+            <option value="absence" {% if type_operation == "absence" %}selected{% endif %}>Absences</option>
           </select>
-          <!-- enseignant -->
+        </div>
 
-          {% if type_operation == "emargement" or type_operation == "cahier" %}
-
-          <div>
-            <label class="label">
-              <span class="label-text"> Enseignant </span>
-            </label>
-
-            <select name="enseignant" class="select select-bordered w-full">
-              <option value="">Tous</option>
+        <div id="enseignantDiv" class="transition-all duration-300 transform scale-95 opacity-0 hidden">
+          <label  class="label">
+            <span class="label-text font medium text-base-content/80">
+              Enseignant
+            </span>
+          </label>
+            <select name="enseignant" class="select select-bordered w-full focus:select-primary transition-all">
+              <option value="">Tous les enseignants</option>
               {% for e in enseignants %}
-              <option value="{{ e.id }}"
-              {% if enseignant_id == e.id|stringformat:"s" %}selected{% endif %}
-                 >
-                 {e.prenom} {e.nom}
+              <option value="{{ e.id }}" 
+              {% if enseignant_id == e.id|stringformat:"s" %}selected {% endif %}>
+                {{ e.prenom }} {{ e.nom }}
               </option>
               {% endfor %}
             </select>
-          </div>
-          {% endif %}
+        </div>
 
-          <!-- Classe -->
+        <div id="classeDiv" class="transitiona-all duration-300 transform scale-95 opacity hidden">
+          <label class="label">
+            <span class="label-text font-medium text-base-content/80">Classe</span>
+          </label>
 
-          {% if operation_type == "absence" %}
+          <select name="classe" class="select select-bordered w-full focus:select-primary transition-all">
+            <option value="">Toutes les classes</option>
+            {% for c in classes %}
+            <option value="{{c.id}}" {% if classe_id == c.id|stringformat:"s" %}selected{% endif %}>
+              {{c}}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="label pt-0">
+            <span class="label-text font-medium text-base-content/80">Debut</span>
+          </label>
+          <input type="date" class="input input-bordered w-full focus:input-primary transition-all"
+          name="date_debut"
+          value="{{ date_debut }}">
+        </div>
 
-          <div>
-            <label class="label">
-              <span class="text-label"> Classe </span>
-            </label>
-            <select name="classe" class="select select-bordered w-full">
-              <option value="">Toutes</option>
+        <div>
+          <label class="label pt-0">
+            <span class="label-text font-medium text-base-content/80">
+              Fin
+            </span>
+          </label>
+          <input type="date" class="input input-bordered w-full focus:input-primary transition-all"
+          name="date_fin"
+          value="{{ date_fin }}">
+        </div>
 
-              {% for c in classes %}
-
-              <option value="{{c.id}}"{% if classe_id == c.id|stringformat:"s" %} selected {% endif %} >
-                {{c}}
-              </option>
-              {% endfor %}
-            </select>
-            {% endif %}
-          </div>
-
-          <!-- date -->
-
-          <div>
-            <label class="label">
-              <span class="label-text"> Date de debut </span>
-            </label>
-            <input
-              type="date"
-              class="input input-bordered w-full"
-              name="date_debut"
-              value="{{ date_debut }}"
-            />
-          </div>
-
-          <div>
-            <label class="label">
-              <span class="label-text"> Date de fin </span>
-            </label>
-            <input
-              type="date"
-              class="input input-bordered w-full"
-              name="date_fin"
-              value="{{date_fin}}"
-            />
+        <div class="flex items-end w-full">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+            <button type="submit" class="btn btn-primary shadow-md hover::shadow-lg transition-all flex items-center justify-center gap-2">
+              Filtrer
+            </button>
+            <button   type="button" onclick="reinitialiserFiltres()" on class="btn btn-outline btn-ghost shadow-sm flex items-center justify-center gap-2"><i class="fa fa-undo text-xs"></i>
+            Reinitialiser</button>
           </div>
         </div>
+
       </div>
     </form>
   </div>
 </div>
 
-{% if type_operation == "emargement" %}
-<table class="table table-zebra">
-  <thead>
-    <tr>
-      <th>Enseignant</th>
-      <th>Date</th>
-      <th>Arrive</th>
-      <th>Depart</th>
-      <th>Classe</th>
-    </tr>
-  </thead>
+{% if type_operation %}
+<div class="card bg-base-100 shadow-xl border border-base mb-8 animate-fadeIn">
+  <div class="card-body">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-base-200 pb-4">
+      <div>
+        <h2 classe="card-title text-xl font-bold flex items-center gap-2">
+          {% if type_operation == "emargement" %}
+          <i class="fa fa-pen-nib text-primary"></i>
+          Liste des Emargements
+          {% elif type_operation == "absence" %}
+          <i class="fa fa-user-slash text-error"></i>Liste des absences
+          {% elif type_operation == "cahier" %}
+          <i class="fa fa-book text-secondary"></i>Cahiers de texte
+          {% endif %}
+        </h2>
+        <p class="text-xs text-base-content/80 mt-1">
+          Resultats touves : <span class="badge badge-sm font-semibold">{{ resultat | length }}</span>
+        </p>
+      </div>
+    </div>
 
-  <tbody>
-    {% for e in resultat %}
-    <tr>
-      <td>{{ e.enseignant }}</td>
-      <td>{{ e.module}}</td>
-      <td>{{ e.date }}</td>
-      <td>{{ e.arrivee }}</td>
-      <td>{{ e.depart }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif%}
+    {% if resultat %}
+    <div class="overflow-x-auto w-full rounded-lg border border-base-200" id="zone-resultats">
+      <table class="table table-zebra w-full">
+        <thead class="bg-base-200/50 text-base-content">
+          <tr>
+            {% if type_operation == "cahier" %}
+            <th>Date</th>
+            <th>Enseignant</th>
+            <th>Module</th>
+            <th>Classe</th>
+            <th>Contenu</th>
+            
+            {% elif type_operation == "emargement" %}
+            <th>Date</th>
+            <th>Classe</th>
+            <th>Module</th>
+            <th>Heure d'arrive</th>
+            <th>Heure de depart</th>
+            {% else %}
+            <th>Date </th>
+            <th>Etudiant</th>
+            <th>Filiere / Classe</th>
+            <th class="text-center">Statut</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% if type_operation == "emargement" %}
+          {% for e in resultat %}
+          <tr class="hover">
+            <td class="whitespace-nowrap font-medium">{{ e.date|date:"d/m/y" }}</td>
+            <td>{{ e.classe.nom }}</td>
+            <td><span class="badge badge-ghost">{{ e.module.nom }}</span></td>
+            <td>{{ e.arrivee }}</td>
+            <td>{{ e.depart }}</td>
+          </tr>
+          {% empty %}
+          <td colspan="5" class="text-center">Aucun enregistre trouve pour cet enseignant</td>
+          {% endfor %}
+          {% elif type_operation == "cahier" %}
+          {% for c in resultat %}
+          <tr class="hover">
+            <td class="whitespace-nowrap font-medium">{{c.date|date:"d/m/Y"}}</td>
+            <td class="font-semibold">{{c.enseignant.prenom}} {{c.enseignant.nom }}</td>
+            <td>{{c.classe.nom}}</td>
+            <td><span class="badge badge-ghost">{{c.module}}</span></td>
+            <td>{{ c.contenu }}</td>
+          </tr>
+          {% endfor %}
 
-{% if type_operation == "absence" %}
-<table class="table table-zebra">
-  <thead>
-    <tr>
-      <th>Etudiant</th>
-      <th>Date</th>
-      <th>Justifie</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {% for a in resultat %}
-    <tr>
-      <td>{{ a.etudiant.prenom }} {{ a.etudiant.nom}}</td>
-      <td>{{a.date}}</td>
-      <td>
-        {% if a.justifie %}
-        <span class="badge bagde-success text-success-content">Justifiee</span>
-        {% else %}
-        <span class="badge badge-warning text-warning-content">
-          Non justifiee
-        </span>
-      </td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+          {% elif type_operation == "absence" %}
+          {% for a in resultat %}
+          <tr>
+            <td class="font-semibold">{{a.etudiant.prenom}} {{a.etudiant.nom}}</td>
+            <td class="whitespace-nowrap font-medium">{{a.date|date:"d/m/Y"}}</td>
+            <td>{{a.etudiant.filiere.nom}}</td>
+            <td><span class="badge badge-error gap-1 text-white text-xs">A verifier</span></td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning shadow-sm flex items-center gap-3">
+      <i class="fa fa-exclamation-triangle text-xl"></i>
+      <div>
+      <h3 class="font-bold">Aucun enregistrement trouv&#233</h3>
+      <div class="text-xs">Modifier les crit&#232res de recherche ou l'intervalle de dates
+      </div>
+    </div>
+    </div>
+    {% endif%}
+  </div>
+</div>
 {% endif %}
+<script>
+  document.addEventListener("DOMContentLoaded" , function() {
+  const type = document.getElementById("typeOperation");
+  const enseignant = document.getElementById("enseignantDiv");
+  const classe = document.getElementById("classeDiv");
 
-{% if type_operation == "cahier" %}
+  function toggleElement(element,show)
+  {
+    if(show) 
+  {
+    element.classList.remove("hidden");
+    setTimeout(() =>{
+      element.classList.remove("opacity-0","scale-95");
+      element.classList.add("opacity-100", "scale-100");
 
-<table class="table table-zebra">
-  <thead>
-    <tr>
-      <th>Classe</th>
-      <th>Date</th>
-      <th>Module</th>
-      <th>Contenu</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {% for c in resultat %}
-    <tr>
-      <td>{{ c.classe }}</td>
-      <td>{{ c.date }}</td>
-      <td>{{ c.contenu|linebreaksbr }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
+    }, 10);
+  }
+    else{
+      element.classList.remove("opacity-100","scale-100");
+      element.classList.add("opacity-0", "scale-95");
+      setTimeout(() =>{
+        element.classList.add("hidden")
+      },300);
+    }
+  }
+  function afficherFiltres(){
+    const val = type.value;
+    if(val === "emargement"){
+      toggleElement(enseignant , true);
+      toggleElement(classe,false);
+    }
+    else if (val === "absence"|| val ==="cahier")
+    {
+      toggleElement(enseignant, false);
+      toggleElement(classe , true);
+    }
+    else {
+      toggleElement(enseignant, false);
+      toggleElement(classe, false);
+    }
+  }
+    type.addEventListener("change", afficherFiltres);
+    afficherFiltres();
+    
+ });
+  
+</script>
+<script>
+function reinitialiserFiltres(){
+  const formulaire = document.querySelector('form');
+  if(formulaire)
+{
+  formulaire.reset();
+  formulaire.querySelectorAll('select').forEach(select => select.value="");
+  formulaire.querySelectorAll('input[type="date"]').forEach(input => input.value = "");
+}
+const zoneResultats = document.getElementById("zone-resultats");
+if(zoneResultats)
+{
+  zoneResultats.style.display="none"
+}
+}
+</script>
 {% endblock %}
