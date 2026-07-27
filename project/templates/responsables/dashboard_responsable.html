@@ -207,7 +207,7 @@
     {% else %}
     <div class="alert alert-warning shadow-sm flex items-center gap-3">
       <i class="fa fa-exclamation-triangle text-xl"></i>
-      <div>
+      <div id="cacher">
       <h3 class="font-bold">Aucun enregistrement trouv&#233</h3>
       <div class="text-xs">Modifier les crit&#232res de recherche ou l'intervalle de dates
       </div>
@@ -267,6 +267,7 @@
 <script>
 function reinitialiserFiltres(){
   const formulaire = document.querySelector('form');
+  const info = document.getElementById("cacher")
   if(formulaire)
 {
   formulaire.reset();
@@ -276,7 +277,8 @@ function reinitialiserFiltres(){
 const zoneResultats = document.getElementById("zone-resultats");
 if(zoneResultats)
 {
-  zoneResultats.style.display="none"
+  zoneResultats.style.display="none";
+  info.style.display="none";
 }
 }
 </script>
