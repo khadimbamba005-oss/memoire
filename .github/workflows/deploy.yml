@@ -12,8 +12,8 @@ jobs:
       - name: Connexion SSH et deploiement
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.PA_HOST }}
-          username: ${{ secrets.PA_USERNAME }}
+          host: ssh.pythonanywhere.com
+          username: ak74
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/${{ secrets.PA_USERNAME }}/memoire
