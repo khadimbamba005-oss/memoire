@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if type_operation == "emargement" %}Rappel des Emargements des Enseignants
+        {% elif type_operation == "absence" %}Suivi des Absences Etudiants
+        {% elif type_operation == "cahier" %}Suivi du Cahier de Texte
+        {% endif %}
+    </title>
+    <link rel="stylesheet" href="{% static 'vendor/daisyui/daisyui.css' %}" type="text/css">
+    <script src="stylesheet" href="{% static 'vendor/daisyui/tailwind-browser.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
+    <style>
+        @media print {
+            body { background: white; color: black;}
+            .no-input {display: none !important;}
+            @page { margin: 1.5cm;}
+            tr {page-break-inside: avoid;}
+        }
+    </style>
+</head>
+<body class="p-8 bg-base-100 text-base-content" onload="window.print();">
+    <div class="no-input flex justify-between items-center bg-base-200 border border-base-300 p-4 rounded-xl mb-6 shadow-sm">
+        <div>
+            <h3 class="font-bold text-sm text-base-content">Apercu du document</h3>
+            <p class="text-xs text-base-content/70">Choississiez l'option <strong>"Enregistrer au format PDF"</strong> dans la fenetre d'impression pour telecharger le fichier</p>
+        </div>
+        <bouton class="btn btns-sm btn-neutral gap-2">
+            <i class="fa fa-print"></i>Lancer l'impression / Enregistrer
+        </bouton>
+    </div>
+
+    <!-- Entete du document  -->
+
+    <div class="flex-justify-between items-start border-b-2 border-gray-300 pb-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-black uppercase tracking-wider text-gray-800">
+                {% if type_operation == 'emargement' %}Registre des Emargements
+                {% elif type_operation == 'absence' %}Fiche de Suivi des Absences
+                {% elif type_operation == 'cahier' %}Contenu du cahier de Text
+                {% endif %}
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">Généré de manière sécurisée le : {% now "d/m/Y à H:i" %}</p>
+            {% if date_debut or date_fin %}
+                <p class="text-xs font-semibold text-gray-600 mt-0.5">Periode d'analyse : {{ date_debut| default:"Debut"}} au {{ date_fin|default:"Fin"}}</p>
+                {% endif %}
+        </div>
+        <div class="text-right">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Document officiel</div>
+            <div class="badge badge-outline mt-1 font-semibold">Total de lignes : {{ resultat| length}}</div>
+        </div>
+    </div>
+
+    <!-- Tableau des donnees dynamique adapte  -->
+     <div class="overflow-x-auto w-full">
+        <table class="table table-compact w-full border border-gray-300">
+            <thead>
+                <tr class="bg-gray-100 text-gray-800 border-b-2 border-gray-300">
+                    {% if type_operation == 'emargement' %}
+                    <th class="p-2 border border border-gray-300 text-left">Date</th>
+                    <th class="p-2 border border border-gray-300 text-left">Enseignant</th>
+                    <th class="p-2 border border border-gray-300 text-left">Module</th>
+                    <th class="p-2 border border border-gray-300 text-left">Classe</th>
+                    <th class="p-2 border border border-gray-300 text-left">Heure d'arrivee</th>
+                    <th class="p-2 border border border-gray-300 text-left">Heure de depart </th>
+                    {% elif type_operation == 'absence' %}
+                    <th class="p-2 border border-gray-300 text-left">Date</th>
+                    <th class="p-2 border border-gray-300 text-left">Etudiant</th>
+                    <th class="p-2 border border-gray-300 text-left">Classe/Filiere</th>
+                    <th class="p-2 border border-gray-300 text-left">Statut</th>
+                    {% elif type_operation == 'cahier' %}
+                    <th class="p-2 border border-gray-300 text-left">Date</th>
+                    <th class="p-2 border border-gray-300 text-left">Enseignant</th>
+                    <th class="p-2 border border-gray-300 text-left">Classe</th>
+                    <th class="p-2 border border-gray-300 text-left">Module</th>
+                    <th class="p-2 border border-gray-300 text-left">Contenu du cours</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in resultat %}
+                <tr class="border-b border-gray-300 text text-sm hover:bg-gray-50/50">
+                    {% if type_operation == 'emargement' %}
+                    <td class="p-2 border border-gray-200 font-medium"> {{ item.date|date:"d/m/Y" }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.enseignant.prenom }} {{ item.enseignant.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.classe.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.module.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.arrivee }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.depart }}</td>
+
+                    {% elif type_operation == 'cahier' %}
+                    <td class="p-2 border border-gray-200 font-medium">{{ item.date|date:"d/m/Y" }}</td>
+                    <td class="p-2 border border-gray-200 semibold">{{ item.enseignant.prenom }} {{ item.enseignant.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.classe.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.module.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.contenu }}</td>  
+                    {% elif type_operation == 'absence' %}
+                    <td class="p-2 border border-gray-200 font-medium">{{ item.date|date:"d/m/Y" }}</td>
+                    <td class="p-2 border border-gray-200 font-semibold">{{ item.etudiant.prenom }} {{ item.etudiant.nom }}</td>
+                    <td class="p-2 border border-gray-200">{{ item.etudiant.filiere}}</td>
+                    <td class="p-2 border border-gray-200"></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+     </div>
+
+      <div class="mt-16 text-center text-xs text-gray-400 border-t border-gray-200 pt-4">
+        Rapport généré automatiquement par l'administration de l'établissment 
+      </div>
+</body>
+</html>

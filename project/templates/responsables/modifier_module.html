@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 max-w-md bg-base-100 shadow-xl rounded-xl">
+<form method="POST" class="space-y-4">
+    {% csrf_token %}
+
+    <label class="form-control">
+        <span class="label-text mb-1">Nom du module
+            {{ form.nom }}
+        </span>
+    </label>
+
+    <div class="grid grid-cols-3 gap-2">
+        <label class="form-control">
+        <span class="label-text mb-1">
+            Nombre d'heures CM
+        </span>
+        {{ form.heures_cm}}
+    </label>
+    
+
+    <label class="form-control">
+        <span class="label-text mb-1">
+            Nombre d'heures TD
+        </span>
+        {{ form.heures_td }}
+    </label>
+
+    <label class="form-control">
+        <span class="text-label mb-1">
+            Nombre d'heures TP
+        </span>
+        {{ form.heures_tp }}
+    </label>
+    </div>
+
+    <label class="form-control">
+        <span class="label-text mb-1">Volume horaire total</span>
+        {{ form.volHoraire }}
+    </label>
+
+    <div class="flex justify-end gap-2 mt-6">
+        <a href="{% url 'liste_modules' %}" class="btn btn-ghost">Annuler</a>
+    <button type="submit" class="btn btn-primary">
+        Modifier
+    </button>
+    </div>
+</form>
+</div>
+<!-- Script pour rendre automatique le calcul du volume horaire total  -->
+
+<script>
+    function CalculerVolumeHoraire(){
+        const cm = parseInt(document.getElementById("id_heures_cm").value) || 0 ;
+        const td = parseInt(document.getElementById("id_heures_td").value) || 0 ;
+        const tp = parseInt(document.getElementById("id_heures_tp").value) || 0 ;
+
+        document.getElementById("id_volHoraire").value = cm + td +tp  ;
+
+    }
+</script>
+{% endblock %}

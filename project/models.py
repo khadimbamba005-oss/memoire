@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 import random
 import string
 from datetime import datetime
+from django import forms
 
 # generation de matricule
 def generate_matricule(nom,filiere):
@@ -65,14 +66,43 @@ class Etudiant(models.Model):
     
 class Module(models.Model):
     nom = models.CharField(max_length=30, null=True)
-    nhCm = models.IntegerField(null = True)
-    nhTp = models.IntegerField(null = True)
-    nhTd = models.IntegerField(null = True)
+    heures_cm = models.PositiveBigIntegerField(default=0 , verbose_name="Heure CM")
+    heures_td = models.PositiveBigIntegerField(default=0 , verbose_name="Heures TD")
+    heures_tp = models.PositiveBigIntegerField(default=0 , verbose_name="Heures TP")
     volHoraire = models.IntegerField(null=True)
     
-
+    def save(self , *args , **kwargs):
+        self.volHoraire = self.heures_cm + self.heures_td + self.heures_tp
+        
+        super().save(*args , **kwargs)
+        
+    
     def __str__(self):
-        return self.nom
+        return f"{self.nom} ({self.volHoraire}h)"
+
+class ModuleForm(forms.ModelForm):
+    class Meta:
+        model = Module
+        fields = ['nom','heures_cm','heures_td','heures_tp','volHoraire']
+        
+        widgets = {
+            'nom':forms.TextInput(attrs={'class':'input input-bordered w-full'}),
+            'heures_cm':forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
+            'heures_td': forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
+            'heures_tp':forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
+            'volHoraire':forms.NumberInput(attrs={'class':'input input-bordered w-full', 'readonly':'readonly'}),
+        }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        cm = cleaned_data.get('heures_cm') or 0
+        td = cleaned_data.get('heures_td') or 0
+        tp = cleaned_data.get('heures_tp') or 0
+    
+        cleaned_data['volHoraire'] = cm + td + tp
+        
+        return cleaned_data
+
 
 class Emargement(models.Model):
     enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)

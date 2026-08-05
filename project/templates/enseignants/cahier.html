@@ -1,4 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="mx-auto max-w-xl"><h1 class="mb-6 text-3xl font-bold">Cahier de texte</h1><section class="card bg-base-100 shadow"><form method="post" class="card-body gap-5">{% csrf_token %}<label class="form-control"><span class="label-text mb-1">Classe</span><select name="classe" class="select select-bordered w-full">{% for c in classes %}<option value="{{ c.id }}">{{ c.filiere }} {{ c.niveau }}</option>{% endfor %}</select></label><label class="form-control"><span class="label-text mb-1">Contenu du cours</span><textarea name="contenu" class="textarea textarea-bordered min-h-36" required></textarea></label><div class="flex justify-end gap-2"><a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a><button class="btn btn-primary" type="submit">Ajouter au cahier</button></div></form></section></div>
+<div class="mx-auto max-w-xl">
+    <h1 class="mb-6 text-3xl font-bold">
+        Cahier de texte
+    </h1>
+    <section class="card bg-base-100 shadow">
+        <form method="post" class="card-body gap-5">
+            {% csrf_token %}
+            <label class="form-control">
+                <span class="label-text">
+                    Enseignant
+                </span>
+                <input type="text" class="input input-bordered w-full" value=""
+                name="enseignant">
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Classe
+                </span>
+                <select name="classe" class="select select-bordered w-full">
+                    {% for c in classes %}<option value="{{ c.id }}">{{ c.filiere }} {{ c.niveau }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">
+                    Module
+                </span>
+                <select name="module" class="select select-bordered w-full">{% for m in modules %}<option value="{{ m.id }}">{{ m.nom }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">
+                    Contenu du cours
+                </span>
+            <textarea name="contenu" class="textarea textarea-bordered min-h-36" required>
+            </textarea>
+        </label>
+        <div class="flex justify-end gap-2">
+            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">
+            Annuler
+            </a>
+            <button class="btn btn-primary" type="submit">Ajouter au cahier</button>
+        </div>
+    </form>
+</section>
+</div>
 {% endblock %}

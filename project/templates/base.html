@@ -97,7 +97,13 @@
                 Gestion des modules
               </summary>
               <ul>
-                <li><a href="{% url 'creer_module' %}">Creer module</a>
+                <li>
+                  <a href="{% url 'creer_module' %}">Creer module
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'liste_modules' %}">Liste des modules
+                  </a>
                 </li>
                 <li><a href="{% url 'affecter_module' %}">Affecter module</a></li>
               </ul>
@@ -200,6 +206,10 @@
             </summary>
             <ul class="p-2 bg-base-100 rounded-box border border-base-200 shadow w-56">
               <li><a href="{% url 'creer_module' %}">Créer un module</a></li>
+              <li>
+                  <a href="{% url 'liste_modules' %}">Liste des modules
+                  </a>
+                </li>
               <li><a href="{% url 'affecter_module' %}">Gestion des affectations</a></li>
             </ul>
           </details>

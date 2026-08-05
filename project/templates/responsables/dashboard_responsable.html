@@ -1,4 +1,5 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block content %}
 <div
   class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
 >
@@ -49,7 +50,7 @@
           <select name="type" id="typeOperation" class="select select-bordered w-full focus:select-primary transition-all">
             <option value="">Choisir</option>
             <option value="emargement" {% if type_operation == "emargement" %}selected{% endif %}>Emargements</option>
-            <option value="cahier" {% if type_operation == "cahier" %}selected {% endif %}>Cahiers</option>
+            <option value="cahier" {% if type_operation == "cahier" %}selected{% endif %}>Cahiers</option>
             <option value="absence" {% if type_operation == "absence" %}selected{% endif %}>Absences</option>
           </select>
         </div>
@@ -110,7 +111,8 @@
             <button type="submit" class="btn btn-primary shadow-md hover::shadow-lg transition-all flex items-center justify-center gap-2">
               Filtrer
             </button>
-            <button   type="button" onclick="reinitialiserFiltres()" on class="btn btn-outline btn-ghost shadow-sm flex items-center justify-center gap-2"><i class="fa fa-undo text-xs"></i>
+            <!-- Bouton pour renitialiser le formulaire  -->
+            <button type="button" onclick="reinitialiserFiltres()" on class="btn btn-outline btn-ghost shadow-sm flex items-center justify-center gap-2"><i class="fa fa-undo text-xs"></i>
             Reinitialiser</button>
           </div>
         </div>
@@ -119,13 +121,13 @@
     </form>
   </div>
 </div>
-
+<!-- Ici on verifie si un type d'operation a ete choisi  -->
 {% if type_operation %}
-<div class="card bg-base-100 shadow-xl border border-base mb-8 animate-fadeIn">
+<div class="card bg-base-100 shadow-xl border border-base mb-8 animate-fadeIn" id="tableau">
   <div class="card-body">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-base-200 pb-4">
-      <div>
-        <h2 classe="card-title text-xl font-bold flex items-center gap-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-base-200 pb-4" id="hide">
+        <h2 classe="card-title text-xl font-bold flex items-center gap-2" id="cacher">
+          <!-- Affichage selon le type d'operation choisi  -->
           {% if type_operation == "emargement" %}
           <i class="fa fa-pen-nib text-primary"></i>
           Liste des Emargements
@@ -135,15 +137,16 @@
           <i class="fa fa-book text-secondary"></i>Cahiers de texte
           {% endif %}
         </h2>
-        <p class="text-xs text-base-content/80 mt-1">
+        <p class="text-xs text-base-content/80 mt-1" id="type">
           Resultats touves : <span class="badge badge-sm font-semibold">{{ resultat | length }}</span>
         </p>
       </div>
+      
     </div>
 
     {% if resultat %}
     <div class="overflow-x-auto w-full rounded-lg border border-base-200" id="zone-resultats">
-      <table class="table table-zebra w-full">
+      <table class="table table-zebra w-full" >
         <thead class="bg-base-200/50 text-base-content">
           <tr>
             {% if type_operation == "cahier" %}
@@ -178,45 +181,86 @@
             <td>{{ e.depart }}</td>
           </tr>
           {% empty %}
-          <td colspan="5" class="text-center">Aucun enregistre trouve pour cet enseignant</td>
+          <td colspan="5" class="text-center">Aucun enregistrement trouve pour cet enseignant</td>
           {% endfor %}
           {% elif type_operation == "cahier" %}
           {% for c in resultat %}
           <tr class="hover">
-            <td class="whitespace-nowrap font-medium">{{c.date|date:"d/m/Y"}}</td>
-            <td class="font-semibold">{{c.enseignant.prenom}} {{c.enseignant.nom }}</td>
+            <td class="whitespace-nowrap font-medium">{{ c.date|date:"d/m/Y" }}</td>
+            <td class="font-semibold">{{ c.enseignant.prenom }} {{c.enseignant.nom }}</td>
             <td>{{c.classe.nom}}</td>
             <td><span class="badge badge-ghost">{{c.module}}</span></td>
             <td>{{ c.contenu }}</td>
           </tr>
+          {% empty %}
+          <td colspan="5">Aucun cahier n'a ete trouve </td>
           {% endfor %}
 
           {% elif type_operation == "absence" %}
           {% for a in resultat %}
           <tr>
-            <td class="font-semibold">{{a.etudiant.prenom}} {{a.etudiant.nom}}</td>
-            <td class="whitespace-nowrap font-medium">{{a.date|date:"d/m/Y"}}</td>
-            <td>{{a.etudiant.filiere.nom}}</td>
-            <td><span class="badge badge-error gap-1 text-white text-xs">A verifier</span></td>
+            <td class="whitespace-nowrap font-medium">{{ a.date|date:"d/m/Y" }}</td>
+            <td class="font-semibold">{{ a.etudiant.prenom}} {{a.etudiant.nom }}</td>
+            <td>{{ a.etudiant.filiere }}</td>
+            <td class="text-center flex-justify-center">
+              <div class="form-control">
+                <label class="label cursor-pointer gap-3">
+                  <span class="label-text text-xs font-fold {% if a.justifie %}text-success{% else %}text-error{% endif %}" id="label-toggle-{{ a.id }}">
+                    {% if a.justifie %}Justifiee{% else %}Non Justifiee{% endif %}
+                  </span>
+                  <input type="checkbox" class="toggle {% if a.justifie %}toggle-succes{% else %}toggle-error{% endif %} toggle-sm"
+                  {% if a.justifie %}checked{% endif %}
+                  onchange="basculerJustification('{{a.id}}', this)">
+                </label>
+              </div>
+            <div class="form-control"></div>
+            </td>
           </tr>
+          {% empty %}
+          <td colspan="4">Aucune absence enregistree pour cette classe</td>
           {% endfor %}
           {% endif %}
         </tbody>
       </table>
     </div>
     {% else %}
-    <div class="alert alert-warning shadow-sm flex items-center gap-3">
+    <!-- Affichage au cas ou aucun resultat n'est trouve  -->
+    <div class="alert alert-warning shadow-sm flex items-center gap-3" id="erreur">
       <i class="fa fa-exclamation-triangle text-xl"></i>
-      <div id="cacher">
+      <div id="hide">
       <h3 class="font-bold">Aucun enregistrement trouv&#233</h3>
       <div class="text-xs">Modifier les crit&#232res de recherche ou l'intervalle de dates
       </div>
     </div>
     </div>
-    {% endif%}
+    {% endif %}
+  </div>
+{% endif %}
+  <!-- div pour le bouton d'impression -->
+  <div id="boutons">
+    {% if resultat %}
+    <div class="flex justify-end" id="boutons">
+      <a href="{% url 'apercu_impression_pdf' %}?{{ request.GET.urlencode }}"  target="_blank" class="btn btn-sm gap-2
+      {% if type_operation == "emargement" %}btn-primary
+      {% elif type_operation == "absence" %}btn-error text-white
+      {% elif type_operation == "cahier" %}btn-secondary {% endif %}">
+      <i class="fa fa-file-pdf text-base"></i>
+      <span>
+        {% if type_operation == "emargement" %}
+        Imprimer la liste des emargements
+        {% elif type_operation == "absence" %}
+        Imprimer la liste des absences
+        {% elif type_operation == "cahier" %}
+        Imprimer le cahier de texte
+        {% endif %}
+      </span>
+    </a>
+    </div>  
+    {% endif %}
   </div>
 </div>
-{% endif %}
+
+<!-- Script pour afficher en cas apres choix dans le filtre  -->
 <script>
   document.addEventListener("DOMContentLoaded" , function() {
   const type = document.getElementById("typeOperation");
@@ -264,10 +308,19 @@
  });
   
 </script>
+
+<!-- Script pour renitialiser le filtre  -->
 <script>
 function reinitialiserFiltres(){
   const formulaire = document.querySelector('form');
-  const info = document.getElementById("cacher")
+  const cacher = document.getElementById("cacher");
+  const resultat = document.getElementById("type");
+  const tableau = document.getElementById("tableau");
+  const boutons =  document.getElementById("boutons");
+  const erreur = document.getElementById("erreur");
+  const hide = document.getElementById("hide");
+  
+
   if(formulaire)
 {
   formulaire.reset();
@@ -278,8 +331,53 @@ const zoneResultats = document.getElementById("zone-resultats");
 if(zoneResultats)
 {
   zoneResultats.style.display="none";
-  info.style.display="none";
+  resultat.style.display="none";
+  tableau.style.display="none";
+  boutons.style.display="none";
+
+}
+else {
+  resultat.style.display="none";
+  tableau.style.display="none";
+  boutons.style.display="none";
+  erreur.style.display="none";
+  hide.style.display="none";
 }
 }
+</script>
+
+<!-- Script pour basculer de  non justifie a justifiee  -->
+
+<script>
+  function basculerJustification(absenceId, toggleInput){
+    const label = document.getElementById(`label-toggle-${absenceId}`);
+
+    path_url = `/dashboard/absence/${absenceId}/toggle-justification/`;
+
+    fetch(path_url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type':'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.status === 'success')
+    {
+      if (data.justifie){
+        label.textContent = "Justifiee";
+        label.className= "label-text text-xs font-bold text-success";
+        toggleInput.className = "toggle toggle-success";
+        }
+        else {
+          label.textContent = "Non justifiee";
+          label.className = "label-text text-xs font-bold text-error";
+          toggleInput.className= "toggle toggle-error"
+      }
+    }
+    })
+    .catch(error => console.error('Erreur:',error));
+  }
 </script>
 {% endblock %}

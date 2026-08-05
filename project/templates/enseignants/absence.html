@@ -34,21 +34,26 @@
             <div class="overflow-x-auto">
                 <div class="max-h-96 overflow-y-auto rounded-box border border-base-300">
                     {% for e in etudiants %}
-                <label class="flex cursor-pointer items-center gap-3 border-b border-base-200 p-3 last:border-0" student-row>
+                <label class="student flex cursor-pointer items-center gap-3 border-b border-base-200 p-3 last:border-0" data-student-id="{{ e.id }}">
+
                     <input type="checkbox" name="presents" 
                     value="{{ e.id }}" class="checkbox checkbox-primary presence-checkbox" checked
-                    
                     onchange="updateRowStatus(this)">
 
                     <span class="font-medium">{{ e.matricule }} {{ e.prenom }} {{ e.nom }}</span>
-                    <div class="ml-auto flex items-center gap-2 justification-zone opacity-30 pointer-events-none">
+
+                    <div class="ml-auto flex items-center gap-2 justification-zone opacity-30 pointer-events-none transition-opacity duration-200">
                         <span class="text-xs text-base-content/60">Justifié ?</span>
 
-                        <input type="checkbox" class="checkbox cheeckbox-warning checkbox-sm justification-checkbox">
+                        <input type="checkbox" class="checkbox checkbox-warning checkbox-sm justification-checkbox"
+                        name="justifies"
+                        value="{{ e.id }}">
                     </div>
-                    <span class="badge badge-success text-success-content status-badge min-w- [75px]text-center" >Present</span>
+
+                    <span class="badge badge-success text-success-content status-badge min-w-[75px]  text-center" >Present</span>
                 </label>
-                {% empty %}<p class="p-4 text-base-content/60">Aucun étudiant dans cette classe.</p>{% endfor %}
+                {% empty %}
+                <p class="p-4 text-base-content/60">Aucun(e) étudiant(e) dans cette classe.</p>{% endfor %}
             </div>
         </div>
         <div class="flex justify-end gap-2">
@@ -66,31 +71,39 @@
         </div>
         {% endif %}
 
+        <!-- Script pour mettre absent ou present  -->
+
         <script>
+            function updateRowStatus(checkbox)
+            {
+            const row = checkbox.closest('.student');
+            if(!row) return;
 
-            function updateRowStatus(checkbox){
-                const row = checkbox.closest('.student');
-                const badge = row.querySelector('.status-badge');
-                const justificationZone = row.querySelector('.justification-zone');
-                const justificationCheckbox = row.querySelector('.justification-checkbox');
+            const badge = row.querySelector('.status-badge');
+            const justificationZone = row.querySelector('.justification-zone');
+            const justificationCheckbox = row.querySelector('.justification-checkbox');
 
-                if(checkbox.checked){
-                    badge.textContent = "Present";
+            if(checkbox.checked)
+        {
+            badge.textContent = "Present";
+            badge.className = "badge badge-success text-success-content status-badge min-w-[75px] text-center";
+            
+            if(justificationCheckbox) justificationCheckbox.checked = false;
+            if(justificationZone)
+        {
+            justificationZone.classList.add('opacity-30','pointer-events-none');
+        }
+       } else {
+        badge.textContent = "Absent";
+        badge.className = "badge badge-error text-error-content status-badge min-w-[75px] text-center";
 
-                    badge.className = "badge badge-success text-succes-content status-badge min-w-[75px] text-center"
+        if(justificationZone)
+       {
+        justificationZone.classList.remove('opacity-30','pointer-events-none');
 
-                    // Blocage et decocher la case de justification
-
-                    justificationCheckbox.checked = false;
-                    justificationZone.classList.add('opacity-30','pointer-events-none');
-                }
-                else {
-                    badge.textContent = "Absent";
-                    badge.className = "badge badge-error text-error-content status-badge min-w-[75px] text-center";
-
-                    justificationZone.classList.remove.opacity('opcaity-30', 'pointer-events-none')
-                }
-            }
+       }
+    }
+}
         </script>
     </div>
     </section>

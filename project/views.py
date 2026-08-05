@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden
+from django.core.paginator import Paginator
+from django.http import HttpResponseForbidden , HttpResponse  , JsonResponse
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Emargement, Enseignant, Absence, Etudiant, Classe, Cahier, Module, Affectation
+from .models import Emargement, Enseignant, Absence, Etudiant, Classe, Cahier, Module, Affectation, ModuleForm
 from datetime import datetime , timedelta ,date
 from django.db.models.functions import TruncDate
 from django.db.models import Sum,F , ExpressionWrapper ,DurationField
@@ -217,7 +219,7 @@ def gestion_classes(request):
         'classes': Classe.objects.prefetch_related('etudiants').order_by('filiere', 'niveau'),
     })
 
-
+# Vue pour creation d'etudiant
 @login_required
 def ajouter_etudiant(request):
     if request.user.role != 'responsable':
@@ -235,30 +237,39 @@ def ajouter_etudiant(request):
             return redirect('gestion_classes')
     return render(request, 'responsables/ajouter_etudiant.html', {'classes': classes})
 
+# Vue pour creation de modules
 @login_required
 def creer_module(request):
     if request.user.role != 'responsable':
-        return HttpResponseForbidden("Cette action est réservée aux responsables pédagogiques.")
+        return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique")
+    
     if request.method == 'POST':
-        nom = request.POST.get('nom', '').strip()
-        volume_horaire = request.POST.get('vol_horaire', '').strip()
-        if not nom or not volume_horaire:
-            messages.error(request, "Le nom et le volume horaire sont obligatoires.")
+        nom = request.POST.get('nom','').strip()
+        
+        try:
+            cm = int(request.POST.get('heures_cm') or 0)
+            td = int(request.POST.get('heures_td') or 0)
+            tp = int(request.POST.get('heures_tp') or 0)
+            
+            if cm < 0 or td < 0 or tp < 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Les volumes doivent etre des entiers positifs")
+            
+            return render(request, 'responsables/creer_module.html')
+        
+        if not nom:
+            messages.error(request, "Le nom du module est obligatoire")
+        elif ( cm + td + tp ) == 0:
+            messages.error(request,"Le volume horaire total ne peut à 0 heure.")
         else:
-            try:
-                volume_horaire = int(volume_horaire)
-                if volume_horaire <= 0:
-                    raise ValueError
-            except ValueError:
-                messages.error(request, "Le volume horaire doit être un nombre entier positif.")
-            else:
-                Module.objects.create(nom=nom, volHoraire=volume_horaire)
-                messages.success(request, f"Le module « {nom} » a été créé.")
-                return redirect('dashboard_responsable')
-    return render(request, 'responsables/creer_module.html')
-    
+            Module.objects.create(nom=nom,heures_cm = cm, heures_td=td,heures_tp=tp)
+            messages.success(request,f"Le module {nom} a été créé avec succès.")
+            return redirect('dashboard_responsable')
+    return render(request,'responsables/creer_module.html')
+     
+# Vue pour les emargements 
 def emarger(request):
-    
     enseignant = Enseignant.objects.get(user=request.user)
     jour = date.today()
     modules = Module.objects.filter(affectation__enseignant=enseignant).distinct()
@@ -295,11 +306,17 @@ def absence(request):
     if request.method == 'POST':
         classe_id = request.POST.get('classe')
         presents = set(request.POST.getlist('presents'))
+        justifies = set(request.POST.getlist('justifies'))
         etudiants_classe = Etudiant.objects.filter(filiere_id=classe_id)
         absents = [etudiant for etudiant in etudiants_classe if str(etudiant.id) not in presents]
         for etudiant in absents:
-            Absence.objects.get_or_create(etudiant=etudiant, date=today)
-        messages.success(request, f"Présences enregistrées : {etudiants_classe.count() - len(absents)} présent(s), {len(absents)} absent(s).")
+            est_justifiie = str(etudiant.id) in justifies
+            
+            Absence.objects.get_or_create(etudiant=etudiant, date=today, defaults={'justifie': est_justifiie})
+            
+            messages.success(request, f"Presences enregistrees:{etudiants_classe.count() - len(absents)} presents(s),{len(absents)} absent(s).")
+        
+           
         return redirect('dashboard_enseignant')
     return render(request,'enseignants/absence.html',
                   {
@@ -309,27 +326,32 @@ def absence(request):
                       'today':today
                   })
    
-   
+# Vue des cahiers de texte 
 def cahier(request):
     classes = Classe.objects.all()
     enseignant = Enseignant.objects.get(user=request.user)
+    modules = Module.objects.all()
 
     if request.method == 'POST':
         classe_id = request.POST.get('classe')
         contenu = request.POST.get('contenu')
+        module_id = request.POST.get('module')
 
         Cahier.objects.create(
             enseignant=enseignant,
             classe_id=classe_id or None,
+            module_id = module_id or None,
             contenu=contenu,
             date=date.today(),
         )
 
         return redirect('dashboard_enseignant')
     return render(request,'enseignants/cahier.html',{
-        'classes':classes
+        'classes':classes,
+        'modules':modules
     })
 
+# Justification 
 def justifier(request,id):
    absence = Absence.objects.all().get(id=id)
    if request.method == 'POST':
@@ -377,3 +399,95 @@ def deconnexion(request):
     logout(request)
     return redirect('login')
         
+
+# vue pour exporter et imprimer 
+
+def apercu_impression_pdf(request):
+    if request.user.role == 'enseignant':
+        return HttpResponseForbidden("Acces refuse")
+    
+    type_operation = request.GET.get("type")
+    enseignant_id = request.GET.get("enseignant")
+    classe_id = request.GET.get("classe")
+    date_debut = request.GET.get("date_debut")
+    date_fin = request.GET.get("date_fin")
+    
+    
+    resultat = []
+    
+    if type_operation == "emargement":
+        resultat = Emargement.objects.select_related("classe","module", "enseignant").all()
+        if enseignant_id: resultat = resultat.filter(enseignant_id=enseignant_id)
+        if date_debut: resultat = resultat.filter(date__gte=date_debut)
+        if date_fin: resultat =resultat.filter(date__lte=date_fin)
+        
+    elif type_operation == "absence":
+        resultat = Absence.objects.select_related("etudiant","etudiant__filiere").all()
+        if classe_id: resultat = resultat.filter(etudiant__filiere_id=classe_id)
+        if date_debut: resultat = resultat.filter(date__gte=date_debut)
+        if date_fin: resultat =resultat.filter(date__lte=date_fin)
+            
+    elif type_operation == "cahier":
+        resultat = Cahier.objects.select_related("classe","module","enseignant").all()
+        if enseignant_id: resultat = resultat.filter(enseignant_id=enseignant_id)
+        if classe_id: resultat = resultat.filter(classe_id=classe_id)
+        if date_debut: resultat = resultat.filter(date__gte=date_debut)
+        if date_fin: resultat = resultat.filter(date__lte=date_fin)
+        
+        
+    context = {
+        "type_operation": type_operation,
+        "resultat": resultat,
+        "date_debut": date_debut,
+        "date_fin": date_fin,
+        }
+        
+    return render(request, 'responsables/impression_pdf.html', context)
+
+
+# vue pour  la justification d'une absence 
+
+
+@require_POST
+def toggle_justification_absence(request, absence_id):
+    if request.user.role != 'responsable':
+        return JsonResponse({ 'status':'error','message':'Interdit'}, status=403)
+
+    try:
+        absence = Absence.objects.get(id=absence_id)
+        absence.justifie = not absence.justifie
+        absence.save()
+        return JsonResponse({'status':'success','justifie':absence.justifie})
+    except Absence.DoesNotExist:
+        return JsonResponse({'status':'error','message':'Absence introuvable '}, status=404)
+
+
+def modifier_module(request, pk):
+    module = get_object_or_404(Module, pk=pk)
+    
+    if request.method == 'POST':
+        form = ModuleForm(request.POST, instance=module)
+        if form.is_valid():
+            form.save()
+            return redirect('liste_modules')
+        
+    else:
+        form = ModuleForm(instance=module)
+            
+    return render(request,'responsables/modifier_module.html',{'form':form,'module':module})
+    
+def liste_modules(request):
+    modules = Module.objects.all().order_by('nom')
+    paginator = Paginator(modules , 10)
+    
+    page_number = request.GET.get('page')
+    
+    page_obj = paginator.get_page(page_number)
+    return render(request,'responsables/liste_modules.html',{'page_obj':page_obj })
+
+
+@require_POST
+def supprimer_module(request, pk):
+    module = get_object_or_404(Module, pk=pk)
+    module.delete()
+    return redirect('liste_modules')

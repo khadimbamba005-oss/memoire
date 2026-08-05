@@ -2,8 +2,8 @@
 {% block content %}
 <div class="mx-auto max-w-xl">
     <div class="mb-6">
-        <h1 class="text-3xl font-bold">Créer un module</h1>
-    <p class="text-base-content/70">Ajoutez un module avant de l’affecter à un enseignant.</p>
+        <h1 class="text-3xl font-bold">Création d'un module
+        </h1>
     </div>
     <section class="card bg-base-100 shadow">
         <form method="post" class="card-body gap-5">
@@ -12,7 +12,28 @@
                 <span class="label-text mb-1">Nom du module</span>
                 <input id="nom" name="nom" class="input input-bordered w-full" maxlength="30" required autofocus>
             </label>
-            <label class="form-control"><span class="label-text mb-1">Volume horaire total</span><input id="vol_horaire" name="vol_horaire" type="number" min="1" class="input input-bordered w-full" required></label>
+
+            <label class="form-control">
+                <span class="label-text mb-1">Nombre d'heures CM</span>
+                <input id="cm" name="heures_cm" class="input input-bordered w-full" maxlength="30" required autofocus
+                type="number" oninput="CalculerVolumeHoraire()">
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Nombre d'heures TD</span>
+                <input id="td" name="heures_td" class="input input-bordered w-full" maxlength="30" autofocus type="number" oninput="CalculerVolumeHoraire()" >
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Nombre d'heures TP</span>
+                <input id="tp" name="heures_tp" class="input input-bordered w-full" maxlength="30" autofocus type="number"
+                oninput="CalculerVolumeHoraire()" >
+            </label>
+
+            <label class="form-control">
+                <span class="label-text mb-1">Volume horaire total</span>
+                <input id="vol_horaire" name="volHoraire" readonly type="number" min="1" class="input input-bordered w-full" required
+            >
+            </label>
+
             <div class="card-actions justify-end">
                 <a class="btn btn-ghost" href="{% url 'dashboard_responsable' %}">Annuler</a>
                 <button class="btn btn-primary" type="submit">Créer le module</button>
@@ -20,4 +41,16 @@
         </form>
 </section>
 </div>
+<script>
+    {   
+        function CalculerVolumeHoraire()
+        {
+            const cm = parseInt(document.getElementById("cm").value) || 0 ;
+            const td = parseInt(document.getElementById("td").value) || 0 ;
+            const tp = parseInt(document.getElementById("tp").value) || 0 ;
+
+            document.getElementById("vol_horaire").value = cm + tp + td ;
+        }
+    }
+</script>
 {% endblock %}
