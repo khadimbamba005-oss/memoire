@@ -1,0 +1,154 @@
+[
+{
+    "model": "project.user",
+    "pk": 17,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$VSmNQAewQaj1MdLUMX7VOH$QoHh7jGid1IlHZrqcrJe95phhbzlgUEUgH8HNeqqpWg=",
+        "last_login": "2026-07-29T13:55:10.964Z",
+        "is_superuser": false,
+        "username": "aida.gueye",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T15:57:10.676Z",
+        "role": "responsable",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 20,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$XAui6760HtwPxVXkA6rmk5$4rbFV6892h0wEoCsgcIz2Zi83xjFWCBV2bfCzK8rAiw=",
+        "last_login": "2026-08-03T18:53:24.909Z",
+        "is_superuser": false,
+        "username": "bassirou.diene",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T19:06:44.049Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 21,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$NHpt7vwh3ftqVjCI0Ld39a$LuVa5u4gVhs/W6hHfG0XY0/UfOvsrG8nttTpl7UxvDo=",
+        "last_login": "2026-07-26T17:48:20.119Z",
+        "is_superuser": false,
+        "username": "khadim.diaw",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T19:25:46.288Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 22,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$e0feGymUbFk5B4iMHXxwbV$DROLULpoF/H1dTzQKseHD8Is1Ok19WsOlsIx6Q6uL9U=",
+        "last_login": "2026-07-12T23:12:31.628Z",
+        "is_superuser": false,
+        "username": "code.ndiaye",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T19:28:13.550Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 23,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$nF1HlEsTiPCxqc388yPBaS$S1VDWCHrD+97X2ickb3Clz9F2g6Idaee3Nd4UnSTAGI=",
+        "last_login": "2026-07-12T20:28:14.989Z",
+        "is_superuser": false,
+        "username": "ousmane.diakhate",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T19:31:07.971Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 24,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$JpietooRWVuhKudBTsg3Al$UhzPUN+GlkwoiuCjCBdaUOPvwOFLIZVgOxe62aZpnfA=",
+        "last_login": "2026-08-05T13:08:21.172Z",
+        "is_superuser": false,
+        "username": "bassirou.diop",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T19:33:56.885Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 25,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$bCi1D6VgKPkFmfOayirO0n$O4g9i/KOnGSghUtdw9fXyeNXzXKzAfUUrrVoweQm/7c=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "khadimrassoul.diop",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-07-12T22:01:37.834Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "project.user",
+    "pk": 26,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$D3OP5Sg6HFlxlSsslNCkxu$3eXDkYj2jGyLK4AQXiLVQfiEA/J/5lM0rO0eQHFG5ZY=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "aliou.sow",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-08-04T12:30:40.744Z",
+        "role": "enseignant",
+        "groups": [],
+        "user_permissions": []
+    }
+}
+]
