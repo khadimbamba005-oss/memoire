@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 max-w-md bg-base-100 shadow-xl rounded-xl">
+    <div class="mb-4 text-center">
+        <h1 class="text-xl font-bold">Profil de {{ etudiant.prenom }} {{ etudiant.nom }}</h1>
+        <div class="badge badge-ghost font-mono mt-1 text-xs">Matricule : {{ etudiant.matricule }}</div>
+    </div>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-2 gap-2">
+            <label class="form-control">
+                <span class="label-text mb-1">Prénom</span>
+                {{ form.prenom }}
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Nom</span>
+                {{ form.nom }}
+            </label>
+        </div>
+
+        <label class="form-control">
+            <span class="label-text mb-1">Adresse Email</span>
+            {{ form.email }}
+        </label>
+
+        <div class="grid grid-cols-2 gap-2">
+            <label class="form-control">
+                <span class="label-text mb-1">Téléphone</span>
+                {{ form.telephone }}
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Adresse</span>
+                {{ form.adresse }}
+            </label>
+        </div>
+
+        <!-- Menu déroulant actif pour changer de classe / réaffecter la filière -->
+        <label class="form-control">
+            <span class="label-text mb-1 font-bold text-primary">Classe / Filière actuelle</span>
+            {{ form.filiere }}
+        </label>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <a href="{% url 'details_classe' etudiant.filiere.id %}" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

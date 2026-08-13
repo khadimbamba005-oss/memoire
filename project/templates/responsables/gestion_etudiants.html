@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 space-y-6">
+    <div class="flex justify-between items-center border-b pb-4 border-base-200">
+        <h1 class="text-2xl font-bold text-neutral">Affectations de Modules</h1>
+    </div>
+
+    <!-- Formulaire d'affectation compact de type "Créer" -->
+    <div class="max-w-md bg-base-100 p-6 rounded-lg border border-base-200 shadow-sm">
+        <h2 class="text-sm font-bold mb-4 text-base-content uppercase tracking-wider">Nouvelle Affectation</h2>
+        <form method="POST" class="space-y-3">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-2">
+                <select name="enseignant" class="select select-bordered select-sm" required>
+                    <option value="" disabled selected>Enseignant...</option>
+                    {% for ens in enseignants %}<option value="{{ ens.id }}">{{ ens }}</option>{% endfor %}
+                </select>
+                <select name="module" class="select select-bordered select-sm" required>
+                    <option value="" disabled selected>Module...</option>
+                    {% for mod in modules %}<option value="{{ mod.id }}">{{ mod.nom }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <select name="classe" class="select select-bordered select-sm" required>
+                    <option value="" disabled selected>Classe...</option>
+                    {% for cls in classes %}<option value="{{ cls.id }}">{{ cls }}</option>{% endfor %}
+                </select>
+                <input type="text" name="annee_universitaire" value="2025-2026" class="input input-bordered input-sm" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm w-full">Affecter le module</button>
+        </form>
+    </div>
+
+    <!-- Filtrage & Recherche -->
+    <form method="GET" class="w-full md:w-96 flex gap-2">
+        <input type="text" name="q" value="{{ search_query }}" placeholder="Rechercher enseignant, classe..." class="input input-bordered input-sm w-full">
+        <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+    </form>
+
+    <!-- Tableau Corporate -->
+    <div class="overflow-x-auto bg-base-100 rounded-lg border border-base-200 shadow-sm">
+        <table class="table w-full">
+            <thead>
+                <tr class="bg-base-200/50">
+                    <th>Enseignant</th>
+                    <th>Module</th>
+                    <th>Classe Assigned</th>
+                    <th>Année</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aff in page_obj %}
+                <tr class="hover border-b border-base-200">
+                    <td class="font-bold text-neutral">{{ aff.enseignant }}</td>
+                    <td><span class="badge badge-primary badge-sm">{{ aff.module.nom }}</span></td>
+                    <td><span class="badge badge-neutral badge-sm">{{ aff.classe }}</span></td>
+                    <td class="text-sm font-mono">{{ aff.annee_universitaire }}</td>
+                    <td class="text-right flex justify-end gap-2">
+                        <a href="{% url 'modifier_affectation' aff.id %}" class="btn btn-warning btn-sm">Modifier</a>
+                        <button class="btn btn-error btn-sm" onclick="document.getElementById('mod_aff_{{ aff.id }}').showModal()">Retirer</button>
+                        
+                        <!-- Modale Corporate -->
+                        <dialog id="mod_aff_{{ aff.id }}" class="modal">
+                            <div class="modal-box text-left bg-base-100 border border-base-300 shadow-2xl rounded-lg">
+                                <h3 class="font-bold text-lg text-error">⚠️ Rompre l'affectation</h3>
+                                <p class="py-4 text-sm text-base-content">Retirer le module <strong>{{ aff.module.nom }}</strong> de l'enseignement de {{ aff.enseignant }} ?</p>
+                                <div class="modal-action">
+                                    <form method="dialog"><button class="btn btn-ghost btn-sm">Annuler</button></form>
+                                    <form method="POST" action="{% url 'supprimer_affectation' aff.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error btn-sm px-5">Confirmer le retrait</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop bg-slate-900/40 backdrop-blur-[2px]"><button>Fermer</button></form>
+                        </dialog>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-base-content/40">Aucune affectation enregistrée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

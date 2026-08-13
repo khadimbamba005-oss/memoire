@@ -8,12 +8,13 @@
         <form method="post" class="card-body gap-5">
             {% csrf_token %}
             <label class="form-control">
-                <span class="label-text">
-                    Enseignant
-                </span>
-                <input type="text" class="input input-bordered w-full" value=""
-                name="enseignant">
-            </label>
+        <span class="label-text mb-1">Enseignant</span>
+        <input
+          class="input input-bordered w-full"
+          value="{{ enseignant.prenom }} {{ enseignant.nom }}"
+          readonly
+        />
+      </label>
             <label class="form-control">
                 <span class="label-text mb-1">Classe
                 </span>

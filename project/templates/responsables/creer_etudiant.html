@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 max-w-md bg-base-100 shadow-xl rounded-xl">
+    <div class="mb-4">
+        <h1 class="text-xl font-bold">Inscription : {{ classe }}</h1>
+        <p class="text-xs text-base-content/50">L'étudiant sera automatiquement rattaché à cette section</p>
+    </div>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-2 gap-2">
+            <label class="form-control">
+                <span class="label-text mb-1">Prénom</span>
+                {{ form.prenom }}
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Nom</span>
+                {{ form.nom }}
+            </label>
+        </div>
+
+        <label class="form-control">
+            <span class="label-text mb-1">Adresse Email</span>
+            {{ form.email }}
+        </label>
+
+        <div class="grid grid-cols-2 gap-2">
+            <label class="form-control">
+                <span class="label-text mb-1">Téléphone</span>
+                {{ form.telephone }}
+            </label>
+            <label class="form-control">
+                <span class="label-text mb-1">Adresse</span>
+                {{ form.adresse }}
+            </label>
+        </div>
+
+        <!-- Rendu discret ou masqué de la classe car géré par l'URL contextuelle -->
+        <div class="hidden">
+            {{ form.filiere }}
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <a href="{% url 'details_classe' classe.id %}" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary">Inscrire l'étudiant</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

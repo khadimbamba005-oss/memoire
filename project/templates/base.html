@@ -94,23 +94,25 @@
               <summary>
                 <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
-                Gestion des modules
+                Modules et affectations
               </summary>
               <ul>
                 <li>
-                  <a href="{% url 'creer_module' %}">Creer module
-                  </a>
-                </li>
                 <li>
                   <a href="{% url 'liste_modules' %}">Liste des modules
                   </a>
                 </li>
-                <li><a href="{% url 'affecter_module' %}">Affecter module</a></li>
+                <li><a href="{% url 'liste_affectations' %}">Liste des affectations</a></li>
               </ul>
             </details>
           </li>
-          
-          <li><a href="{% url 'gestion_classes' %}"><svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> Gestion des classes</a></li>
+          <li>
+                  <a href="{% url 'liste_classes' %}">
+                      
+                  <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>Gestion des classes et etudiants</a>
+                
+            </li>
 
           {% else %}
           <li>
@@ -132,7 +134,7 @@
             </details>
           </li>
           
-          <li><a href="{% url 'gestion_classes' %}">
+          <li><a href="{% url '' %}">
             <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg> Gestion des classes</a>
@@ -145,7 +147,7 @@
     <span>Gestion des utilisateurs</span>
   </a>
 </li>
-        {% endif %}
+      {% endif %}
       </ul>
     </div>
   </div>
@@ -202,27 +204,25 @@
               <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <span>Gestion des modules</span>
+              <span>Modules et Affecations</span>
             </summary>
             <ul class="p-2 bg-base-100 rounded-box border border-base-200 shadow w-56">
-              <li><a href="{% url 'creer_module' %}">Créer un module</a></li>
+        
               <li>
                   <a href="{% url 'liste_modules' %}">Liste des modules
                   </a>
                 </li>
-              <li><a href="{% url 'affecter_module' %}">Gestion des affectations</a></li>
+              <li><a href="{% url 'liste_affectations' %}">Liste des affectations</a></li>
             </ul>
           </details>
         </li>
         <li>
-          <a class="font-medium flex items-center gap-2" href="{% url 'gestion_classes' %}">
-            <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>Classes et étudiants</span>
-          </a>
-        </li>
-
+          <a href="{% url 'liste_classes' %}">
+                  <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>Gestion des classes et etudiants
+                  </a>
+           
+            </li>
         {% else %}
         <li>
           <a class="font-medium flex items-center gap-2" href="{% url 'dashboard_responsable' %}">
@@ -248,7 +248,7 @@
           </details>
         </li>
         <li>
-          <a class="font-medium flex items-center gap-2" href="{% url 'gestion_classes' %}">
+          <a class="font-medium flex items-center gap-2" href="{% url '' %}">
             <svg xmlns="http://w3.org" class="w-5 h-5 inline-block shrink-0 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -282,5 +282,25 @@
       </div>
       {% endfor %}{% endif %} {% block content %}{% endblock %}
     </main>
+
+    {% if messages %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function(){
+        const alerts = document.querySelectorAll('.alert');
+
+        alerts.forEach(function(alert){
+          setTimeout(() => {
+            alert.style.transition = "opacity 0.6 ease, transform 0.6 ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "scale(0.95)";
+
+            setTimeout(() =>{
+              alert.remove();
+            },600)
+          },4000)
+        })
+      })
+    </script>
+    {% endif %}
   </body>
 </html>

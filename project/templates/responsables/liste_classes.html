@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Liste des Classes</h1>
+        <a href="{% url 'creer_classe' %}" class="btn btn-primary btn-sm">Nouvelle Classe</a>
+    </div>
+
+    <div class="overflow-x-auto bg-base-100 rounded-lg border border-base-200 shadow-sm">
+        <table class="table w-full">
+            <thead>
+                <tr class="bg-base-200/50">
+                    <th>Code</th>
+                    <th>Filière</th>
+                    <th>Niveau</th>
+                    <th class="text-center ">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in page_obj %}
+                <tr class="hover">
+                    <td class="font-bold">{{ c.code }}</td>
+                    <td>{{ c.filiere }}</td>
+                    <td>{{ c.niveau }}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-1">
+                            <!-- Bouton Détails -->
+                            <a href="{% url 'details_classe' c.id %}" class="btn btn-info btn-sm">
+                                Détails
+                            </a>
+
+                            <!-- Bouton Modifier -->
+                            <a href="{% url 'modifier_classe' c.id %}" class="btn btn-warning btn-sm gap-1">
+                                <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                                Modifier
+                            </a>
+                            <!-- Bouton Déclencher Modal de Suppression -->
+                            <button class="btn btn-error btn-sm" onclick="document.getElementById('modal_supprimer_classe_{{ c.id }}').showModal()">
+                                Supprimer
+                            </button>
+                        </div>
+
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-8">Aucune classe enregistrée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% for c in page_obj %}
+    <dialog id="modal_supprimer_classe_{{ c.id }}" class="modal">
+            <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
+                <h3 class="font-bold text-lg text-error flex items-center gap-2">Confirmer la suppression</h3>
+                <p class="py-4 text-base-content text-sm">
+                        Voulez-vous vraiment supprimer la classe<span class="font-semibold text-neutral">{{ c.filiere }} {{ c.niveau }} ({{ c.code }})</span> ?
+                    <span class="block mt-1 font-medium text-error">
+                        Cette action est irréversible et échouera si des étudiants y sont rattachés.
+                    </span>
+                </p>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn btn-ghost btn-sm">Annuler</button>
+                    </form>
+                    <form method="POST" action="{% url 'supprimer_classe' c.id %}">
+                            {% csrf_token %}
+                        <button type="submit" class="btn btn-error btn-sm px-5">Confirmer</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop bg-slate-900/40 backdrop-blur-[2px]">
+            <button>Fermer</button>
+        </form>
+    </dialog>
+    {% endfor %}
+</div>
+{% endblock %}

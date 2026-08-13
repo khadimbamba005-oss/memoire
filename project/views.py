@@ -5,11 +5,13 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Emargement, Enseignant, Absence, Etudiant, Classe, Cahier, Module, Affectation, ModuleForm
+from .models import Emargement, Enseignant, Absence, Etudiant, Classe, Cahier, Module, Affectation, ModuleForm , AffectationForm , ClasseForm , EtudiantForm
 from datetime import datetime , timedelta ,date
 from django.db.models.functions import TruncDate
 from django.db.models import Sum,F , ExpressionWrapper ,DurationField
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 
 def connexion(request):
     if request.method == 'POST':
@@ -176,7 +178,8 @@ def dashboard_responsable(request):
             resultat = resultat.filter(date__lte =date_fin)
 
     context = {
-        "modules_count":Module.objects.count(),
+        "classes_count":Classe.objects.count(),
+        "etudiants_count":Etudiant.objects.count(),
         "enseignants_count":Enseignant.objects.count(),
         "affectations_count":Affectation.objects.count(),
 
@@ -197,47 +200,108 @@ def dashboard_responsable(request):
         context
     )
 
-@login_required
-def gestion_classes(request):
+# liste des affectations 
+def liste_affectations(request):
     if request.user.role != 'responsable':
-        return HttpResponseForbidden("Cette action est réservée aux responsables pédagogiques.")
+            return HttpResponseForbidden("Cette page est réservée aux responsables pédagogiques.")
+        
+    affectations = Affectation.objects.select_related('enseignant','module','classe').order_by('annee_universitaire')
+    
+    paginator  = Paginator(affectations,10)
+    page_number =  request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'responsables/liste_affectations.html',{'page_obj':page_obj})
 
-    if request.method == 'POST':
-        filiere = request.POST.get('filiere', '').strip()
-        niveau = request.POST.get('niveau', '').strip()
-        if not filiere or not niveau:
-            messages.error(request, "La filière et le niveau sont obligatoires.")
-        else:
-            classe, cree = Classe.objects.get_or_create(filiere=filiere, niveau=niveau)
-            if cree:
-                messages.success(request, f"La classe {classe} a été créée.")
-            else:
-                messages.warning(request, "Cette classe existe déjà.")
-            return redirect('gestion_classes')
-
-    return render(request, 'responsables/gestion_classes.html', {
-        'classes': Classe.objects.prefetch_related('etudiants').order_by('filiere', 'niveau'),
-    })
-
-# Vue pour creation d'etudiant
-@login_required
-def ajouter_etudiant(request):
+def creer_affectation(request):
+    
     if request.user.role != 'responsable':
-        return HttpResponseForbidden("Cette action est réservée aux responsables pédagogiques.")
-
-    classes = Classe.objects.order_by('filiere', 'niveau')
+        return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique")
+    
     if request.method == 'POST':
-        champs = {nom: request.POST.get(nom, '').strip() for nom in ('nom', 'prenom', 'adresse', 'telephone', 'email')}
-        classe_id = request.POST.get('classe')
-        if not classe_id or not all(champs.values()):
+        # Récupération des identifiants depuis le formulaire
+        enseignant_id = request.POST.get('enseignant', '').strip()
+        module_id = request.POST.get('module', '').strip()
+        classe_id = request.POST.get('classe', '').strip()
+        annee_universitaire = request.POST.get('annee_universitaire', '').strip()
+        
+        # 2. Validation de la présence des champs obligatoires
+        if not enseignant_id or not module_id or not classe_id or not annee_universitaire:
             messages.error(request, "Tous les champs sont obligatoires.")
-        else:
-            Etudiant.objects.create(filiere_id=classe_id, **champs)
-            messages.success(request, "L'étudiant a été ajouté à la classe.")
-            return redirect('gestion_classes')
-    return render(request, 'responsables/ajouter_etudiant.html', {'classes': classes})
+            # Recharger la page en renvoyant les listes pour le formulaire
+            enseignants = Enseignant.objects.all()
+            modules = Module.objects.all()
+            classes = Classe.objects.all()
+            return render(request, 'responsables/creer_affectation.html', {
+                'enseignants': enseignants, 'modules': modules, 'classes': classes
+            })
+            
+        try:
+            # 3. Récupération des instances d'objets pour tester leur existence
+            enseignant = Enseignant.objects.get(id=enseignant_id)
+            module = Module.objects.get(id=module_id)
+            classe = Classe.objects.get(id=classe_id)
+            
+            # 4. Vérification d'unicité (unique_together) avant création
+            deja_affecte = Affectation.objects.filter(
+                enseignant=enseignant,
+                module=module,
+                annee_universitaire=annee_universitaire,
+                classe=classe
+            ).exists()
+            
+            if deja_affecte:
+                messages.error(request, f"Cet enseignant est déjà affecté à ce module pour cette classe et cette année.")
+            else:
+                # 5. Création de l'affectation si tout est valide
+                Affectation.objects.create(
+                    enseignant=enseignant,
+                    module=module,
+                    classe=classe,
+                    annee_universitaire=annee_universitaire
+                )
+                messages.success(request, f"L'affectation de {enseignant} sur le module {module} a été créée avec succès.")
+                return redirect('dashboard_responsable')
+                
+        except (ValueError, Enseignant.DoesNotExist, Module.DoesNotExist, Classe.DoesNotExist):
+            messages.error(request, "Une des entités sélectionnées (Enseignant, Module ou Classe) est invalide.")
+            
+    # Récupération des données pour alimenter les listes déroulantes (<select>) du formulaire
+    context = {
+        'enseignants': Enseignant.objects.all(),
+        'modules': Module.objects.all(),
+        'classes': Classe.objects.all(),
+    }
+    return render(request, 'responsables/affecter_module.html', context)
 
-# Vue pour creation de modules
+# Vue pour affectation
+def modifier_affectation(request, pk):
+    
+    if request.user.role != 'responsable':
+                return HttpResponseForbidden("Cette page est réservée à l'assistante pédagogiques.")
+    
+    affectation = get_object_or_404(Affectation, pk=pk)
+    
+    if request.method == 'POST':
+        # Associe les données POST à l'instance existante
+        form = AffectationForm(request.POST, instance=affectation)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "L'affectation a été modifiée avec succès.")
+            return redirect('liste_affectations')
+    else:
+        # Pré-remplit le formulaire avec les valeurs actuelles de la base
+        form = AffectationForm(instance=affectation)
+        
+    return render(request, 'responsables/modifier_affectation.html', {'form': form})
+
+@require_POST
+def supprimer_affectation(request,pk):
+    affetation = get_object_or_404(Affectation, pk=pk)
+    affetation.delete()
+    return redirect('liste_affectations')
+
+# Vue les modules
 @login_required
 def creer_module(request):
     if request.user.role != 'responsable':
@@ -267,43 +331,101 @@ def creer_module(request):
             messages.success(request,f"Le module {nom} a été créé avec succès.")
             return redirect('dashboard_responsable')
     return render(request,'responsables/creer_module.html')
-     
+def liste_modules(request):
+    if request.user.role != 'responsable':
+            return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique.")
+    modules = Module.objects.all().order_by('nom')
+    paginator = Paginator(modules , 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request,'responsables/liste_modules.html',{'page_obj':page_obj })
+
+@require_POST
+def modifier_module(request, pk):
+    if request.user.role != 'responsable':
+            return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique.")
+        
+    module = get_object_or_404(Module, pk=pk)
+    if request.method == 'POST':
+        form = ModuleForm(request.POST, instance=module)
+        if form.is_valid():
+            form.save()
+            return redirect('liste_modules')
+        
+    else:
+        form = ModuleForm(instance=module)
+            
+    return render(request,'responsables/modifier_module.html',{'form':form,'module':module})
+
+@require_POST
+def supprimer_module(request, pk):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique.")
+    
+    module = get_object_or_404(Module, pk=pk)
+    module.delete()
+    return redirect('liste_modules')
+
+
+    
+# vue pour faire une nouvelle affectation 
+
 # Vue pour les emargements 
 def emarger(request):
+    if request.user.role != 'enseignant':
+        return HttpResponseForbidden("Acces refuse")
+    
     enseignant = Enseignant.objects.get(user=request.user)
     jour = date.today()
     modules = Module.objects.filter(affectation__enseignant=enseignant).distinct()
+    classes = Classe.objects.filter(affectation__enseignant=enseignant).distinct
 
     if request.method == 'POST':
         arrivee = request.POST.get('arrivee')
         depart = request.POST.get('depart')
         module_id = request.POST.get('module')
+        classe_id = request.POST.get('classe')
 
+        if module_id and not modules.filter(id=module_id).exists():
+            messages.error(request,"Action non autorisee : Ce module ne vous est attibué.")
+            return redirect('emarger')
+        
         Emargement.objects.create(
             enseignant=enseignant,
             date = jour,
             arrivee = arrivee,
             depart = depart,
             module_id=module_id or None,
+            classe_id=classe_id or None,
         )
+        messages.success(request,"Votrs émargement a été bien enregistré.")
         return redirect('dashboard_enseignant')
     return render(request,'enseignants/emarger.html',
                   {
                       'enseignant':enseignant,
                       'jour':jour,
                       'modules': modules,
+                      'classes':classes,
                   })
 
 
 def absence(request):
+    if request.user.role != 'enseignant':
+        return HttpResponseForbidden("Accès refusé")
+    
+    enseignant = Enseignant.objects.get(user=request.user)
     classe_id = request.GET.get('classe')
     etudiants = []
     classes = Classe.objects.all()
     today = date.today()
 
     if classe_id:
-        etudiants = Etudiant.objects.filter(filiere_id=classe_id).order_by('nom', 'prenom')
-    if request.method == 'POST':
+        if classes.filter(id=classe_id).exists():
+            etudiants = Etudiant.objects.filter(filiere_id=classe_id).order_by('nom', 'prenom')
+        else:
+            messages.error(request,"Vous n'intervenez pas dans cette classe.")
+            classe_id = None
+    if request.method == 'POST' and classe_id:
         classe_id = request.POST.get('classe')
         presents = set(request.POST.getlist('presents'))
         justifies = set(request.POST.getlist('justifies'))
@@ -328,15 +450,19 @@ def absence(request):
    
 # Vue des cahiers de texte 
 def cahier(request):
-    classes = Classe.objects.all()
     enseignant = Enseignant.objects.get(user=request.user)
-    modules = Module.objects.all()
-
+    classes = Classe.objects.filter(affectation__enseignant=enseignant).distinct()
+    modules = Module.objects.filter(affectation__enseignant=enseignant).distinct()
+    
     if request.method == 'POST':
         classe_id = request.POST.get('classe')
         contenu = request.POST.get('contenu')
         module_id = request.POST.get('module')
 
+        if (classe_id and not classes.filter(id=classe_id).exists()) or (module_id and not modules.filter(id=module_id).exists()):
+            messages.error(request,"Données invalides: Vous n'êtes pas affecté à cette classe ou à ce module")
+            return redirect('cahier')
+        
         Cahier.objects.create(
             enseignant=enseignant,
             classe_id=classe_id or None,
@@ -344,11 +470,12 @@ def cahier(request):
             contenu=contenu,
             date=date.today(),
         )
-
+        messages.success(request,"Le cahier de texte a été rempli.")
         return redirect('dashboard_enseignant')
     return render(request,'enseignants/cahier.html',{
         'classes':classes,
-        'modules':modules
+        'modules':modules,
+        'enseignant':enseignant
     })
 
 # Justification 
@@ -365,10 +492,11 @@ def justifier(request,id):
                      'absence':absence
                  })
 
+
 @login_required
 def affecter_module(request):
     if request.user.role != 'responsable':
-        return HttpResponseForbidden("Cette action est réservée aux responsables pédagogiques.")
+        return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique.")
 
     modules = Module.objects.order_by('nom')
     enseignants = Enseignant.objects.order_by('nom', 'prenom')
@@ -398,10 +526,8 @@ def affecter_module(request):
 def deconnexion(request):
     logout(request)
     return redirect('login')
-        
 
 # vue pour exporter et imprimer 
-
 def apercu_impression_pdf(request):
     if request.user.role == 'enseignant':
         return HttpResponseForbidden("Acces refuse")
@@ -411,7 +537,6 @@ def apercu_impression_pdf(request):
     classe_id = request.GET.get("classe")
     date_debut = request.GET.get("date_debut")
     date_fin = request.GET.get("date_fin")
-    
     
     resultat = []
     
@@ -446,8 +571,6 @@ def apercu_impression_pdf(request):
 
 
 # vue pour  la justification d'une absence 
-
-
 @require_POST
 def toggle_justification_absence(request, absence_id):
     if request.user.role != 'responsable':
@@ -462,32 +585,130 @@ def toggle_justification_absence(request, absence_id):
         return JsonResponse({'status':'error','message':'Absence introuvable '}, status=404)
 
 
-def modifier_module(request, pk):
-    module = get_object_or_404(Module, pk=pk)
+# Vues pour pour la gestion des classes
+def liste_classes(request):
+    if request.user.role == 'enseignant':
+            return HttpResponseForbidden("Acces refuse")
+        
+    classes = Classe.objects.all().order_by('filiere','niveau')
+    paginator = Paginator(classes,10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request,'responsables/liste_classes.html',{'page_obj':page_obj})
+
+
+def creer_classe(request):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refuse")
     
     if request.method == 'POST':
-        form = ModuleForm(request.POST, instance=module)
+        form = ClasseForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('liste_modules')
+            messages.success(request, "La classe a été créée avec succès .")
+            return redirect('liste_classes')
+    
+    else:
+        form = ClasseForm()
+    return render(request,'responsables/creer_classe.html',{'form':form})
+
+
+def details_classe(request,pk):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refuse")
+    
+    classe = get_object_or_404(Classe,pk=pk)
+    
+    if request.method == 'POST' and 'supprimer_etduiant_id' in request.POST:
+        etudiant_id = request.POST.get('supprimer_etudiant_id')
+        etudiant = get_object_or_404(Etudiant, id=etudiant_id, filter=classe)
+        etudiant.delete()
+        messages.success(request,f"L'étudiant(e) {etudiant} a été retiré(e) de la classe.")
+        return redirect('details_classe',pk=classe.id)
+    
+    etudiants_classe = classe.etudiants.all().order_by('nom')
+    return render(request,'responsables/details_classe.html',{'classe':classe,'etudiants':etudiants_classe})  
+
+def modifier_classe(request,pk):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refuse")
+    
+    classe = get_object_or_404(Classe,pk=pk)
+    
+    if request.method == 'POST':
+        form = ClasseForm(request.POST,instance=classe)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request,f"La classe {classe.code} a été modifiée avec succès")
+            return redirect('liste_classes')
+    else:
+        form = ClasseForm(instance=classe)
+    
+    return render(request,'responsables/modifier_classe.html',{'form':form,'classe':classe})   
+
+def supprimer_classe(request,pk):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refusé")
+    
+    classe = get_object_or_404(Classe,pk=pk)
+    
+    if request.method == 'POST':
+        if classe.etudiants.exists():
+            messages.error(
+                request,f"Impossible de supprimer la classe {classe}.Elle contient encore {classe.etudiants.count()} étudiant(s)."
+            )  
+        else:
+            classe.delete()
+            messages.success(request,f"La classe {classe} a été supprimée avec succès")
+    return redirect('liste_classes')
+
+
+def ajouter_etudiant(request,classe_id):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refuse")
+    
+    classe = get_object_or_404(Classe,pk=classe_id) 
+    
+    if request.method == 'POST':
+        form = EtudiantForm(request.POST)
+        if form.is_valid():
+            etudiant = form.save(commit=False)
+            etudiant.filiere = classe
+            etudiant.save()
+            messages.success(request, f"L'étudiant(e) {etudiant} a été ajouté(e) à la classe {classe}.")
+            return redirect('details_classe',pk=classe.id)
         
     else:
-        form = ModuleForm(instance=module)
-            
-    return render(request,'responsables/modifier_module.html',{'form':form,'module':module})
-    
-def liste_modules(request):
-    modules = Module.objects.all().order_by('nom')
-    paginator = Paginator(modules , 10)
-    
-    page_number = request.GET.get('page')
-    
-    page_obj = paginator.get_page(page_number)
-    return render(request,'responsables/liste_modules.html',{'page_obj':page_obj })
+        form = EtudiantForm(initial={'filiere':classe})
+        
+    return render(request,'responsables/creer_etudiant.html',{'form':form,'classe':classe})
 
 
-@require_POST
-def supprimer_module(request, pk):
-    module = get_object_or_404(Module, pk=pk)
-    module.delete()
-    return redirect('liste_modules')
+def modifier_etudiant(request,pk):
+    if request.user.role != 'responsable':
+        return HttpResponseForbidden("Acces refuse")
+    
+    etudiant = get_object_or_404(Etudiant,pk=pk)
+    ancienne_classe_id = etudiant.filiere.id
+    
+    if request.method == 'POST':
+        form = EtudiantForm(request.POST , instance=etudiant)
+        
+        if form.is_valid():
+            nouvel_etudiant = form.save()
+            messages.success(request,f"Le profil de {nouvel_etudiant} a été mis à jour.")
+            return redirect('details_classe',pk=nouvel_etudiant.filiere.id)
+        else:
+            messages.error(request,"Veuillez corriger les erreurs dans le formulaire ci-dessus")
+    else:
+        form = EtudiantForm(instance=etudiant)
+    
+    return render(request, 'responsables/modifier_etudiant.html',{'form':form, 'etudiant':etudiant})
+   
+
+        
+def retirer_etudiant(request,pk):
+    etudiant = get_object_or_404(Etudiant,pk=pk)
+    classe_pk = etudiant.filiere.pk
+    etudiant.delete()
+    return redirect('details_classe',pk=classe_pk)

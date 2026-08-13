@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 max-w-md bg-base-100 shadow-xl rounded-xl">
+    <div class="mb-4">
+        <h1 class="text-xl font-bold text-base-content">Modifier l'affectation</h1>
+    </div>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Enseignant -->
+        <label class="form-control">
+            <span class="label-text mb-1">Enseignant</span>
+            {{ form.enseignant }}
+        </label>
+
+        <!-- Module -->
+        <label class="form-control">
+            <span class="label-text mb-1">Module</span>
+            {{ form.module }}
+        </label>
+
+        <!-- Classe & Année sur la même ligne grâce au Grid -->
+        <div class="grid grid-cols-2 gap-2">
+            <label class="form-control">
+                <span class="label-text mb-1">Classe</span>
+                {{ form.classe }}
+            </label>
+            
+            <label class="form-control">
+                <span class="label-text mb-1">Année Universitaire</span>
+                {{ form.annee_universitaire }}
+            </label>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex justify-end gap-2 mt-6">
+            <a href="{% url 'liste_affectations' %}" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary">
+                Modifier
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

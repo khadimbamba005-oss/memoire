@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+        <a href="{% url 'creer_affectation' %}" class="btn btn-primary btn-sm">
+            Ajouter une nouvelle affectation 
+        </a>
+    </div>
+
+    <div class="overflow-x-auto bg-base-100 rounded-lg border border-base-200 shadow-sm">
+        <table class="table w-full">
+            <thead>
+                <tr class="bg-base-200/50">
+                    <th>Enseignant</th>
+                    <th>Module</th>
+                    <th class="text-center">Classe</th>
+                    <th class="text-center">Année Universitaire</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in page_obj %}
+                <tr class="hover">
+                    <td class="font-medium text-base-content">{{ a.enseignant }}</td>
+                    <td>{{ a.module.nom }}</td>
+                    <td class="text-center">{{ a.classe.niveau }} {{ a.classe.filiere }}</td>
+                    <td class="text-center"><span class="badge badge-ghost">{{ a.annee_universitaire }}</span></td>
+                    <td class="text-right">
+                        <a href="{% url 'modifier_affectation' a.id %}" class="btn btn-warning btn-sm gap-1">
+                            <svg xmlns="http://w3.org" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            Modifier 
+                        </a>
+
+                        <!-- Utilisation stricte de a.id pour identifier le modal de cette ligne -->
+                        <button class="btn btn-error btn-sm" onclick="document.getElementById('modal_supprimer_{{ a.id }}').showModal()">Supprimer</button>
+
+                        <dialog id="modal_supprimer_{{ a.id }}" class="modal">
+                            <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
+                                <h3 class="font-bold text-lg text-error flex items-center gap-2">Confirmer la suppression</h3>
+                                <p class="py-4 text-base-content text-sm">Voulez-vous vraiment supprimer l'affectation de 
+                                    <span class="font-semibold text-neutral">{{ a.enseignant }}</span> sur le module 
+                                    <span class="font-semibold text-neutral">{{ a.module.nom }}</span> ? 
+                                <span class="block mt-1 font-medium text-error">
+                                    Cette action est irréversible
+                                </span>.</p>
+                                <div class="modal-action">
+                                    <form method="dialog">
+                                        <button class="btn btn-ghost btn-sm">Annuler</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'supprimer_affectation' a.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error btn-sm px-5">Confirmer</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop bg-slate-900/40 backdrop-blur-[2px]">
+                                <button>Fermer</button>
+                            </form>
+                        </dialog>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-base-content/50">
+                        Aucune affectation n'a été trouvée
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination identique et synchronisée -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center mt-6 bg-base-100 p-4 rounded-lg border border-base-200">
+        <span class="text-sm text-base-content/70">
+            Page <strong>{{ page_obj.number }} </strong> sur {{ page_obj.paginator.num_pages }}
+        </span>
+        <div class="join">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-outline btn-sm border-base-300"><<</a>
+            {% else %}
+            <button class="join-item btn btn-outline btn-sm btn-disabled border-base-300"><<</button>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <button class="join-item btn btn-sm btn-primary">{{ num }}</button>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="join-item btn btn-outline btn-sm border-base-300">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+        
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-outline btn-sm border-base-300">>></a>
+            {% else %}
+            <button class="join-item btn btn-outline btn-disabled border-base-300">>></button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

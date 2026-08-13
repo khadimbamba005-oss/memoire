@@ -16,6 +16,16 @@
         />
       </label>
       <label class="form-control">
+        <span class="label-text mb-1">Classe</span>
+        <select name="module" class="select select-bordered w-full">
+          {% for classe in classes %}
+          <option value="{{ classe.id }}">{{ classe.niveau }} {{ classe.filiere }}</option>
+          {% empty %}
+          <option value="">Aucue classe affectée</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="form-control">
         <span class="label-text mb-1">Module</span>
         <select name="module" class="select select-bordered w-full">
           {% for module in modules %}

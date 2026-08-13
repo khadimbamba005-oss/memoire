@@ -30,22 +30,32 @@ class User(AbstractUser):
 
 class Enseignant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nom = models.CharField(max_length=20)
-    prenom = models.CharField(max_length=20)
+    nom = models.CharField(max_length=40)
+    prenom = models.CharField(max_length=40)
     email = models.EmailField()
-    telephone = models.CharField(max_length=20)
-
+    telephone = models.CharField(max_length=9)
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
     
 class Classe(models.Model):
     code = models.CharField(max_length=10, blank=True)
-    filiere = models.CharField(max_length=20)
-    niveau = models.CharField(max_length=20)
+    filiere = models.CharField(max_length=40)
+    niveau = models.CharField(max_length=40)
 
     def __str__(self):
         return f"{self.filiere} {self.niveau}"
+    
+class ClasseForm(forms.ModelForm):
+    class Meta:
+        model = Classe
+        fields = ['code','niveau','filiere']
+        widgets = {
+            'code':forms.TextInput(attrs={'class':'input input-bordered w-full','placeholder':'L1INFO'}),
+            'niveau':forms.TextInput(attrs={'class':'input input-bordered w-full','placeholder':'Licence 1'}),
+            'filiere':forms.TextInput(attrs={'class':'input input-bordered w-full','placeholder':'Genie Logiciel'})
+        }
+        
 
 class Etudiant(models.Model):
     matricule = models.CharField(max_length=20, unique=True , blank=True)
@@ -59,10 +69,22 @@ class Etudiant(models.Model):
     def save(self, *args, **kwargs):
         if not self.matricule:
             self.matricule = generate_matricule(self.nom,self.filiere.filiere)
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f" {self.prenom} {self.nom}"
+        return f"{self.prenom} {self.nom}"
+    
+class EtudiantForm(forms.ModelForm):
+    class Meta:
+        model = Etudiant
+        fields = ['nom','prenom','adresse','telephone','email']
+        widgets = {
+            'nom': forms.TextInput(attrs={'class':'input input-bordered w-full'}),
+            'prenom': forms.TextInput(attrs={'class':'input input-bordered w-full'}),
+            'adresse':forms.TextInput(attrs={'class':'input input-bordered w-full'}),
+            'telephone':forms.TextInput(attrs={'class':'input input-bordered w-full','maxlength': '9'}),
+            'email':forms.EmailInput(attrs={'class':'input input-borded w-full'}),
+        }
     
 class Module(models.Model):
     nom = models.CharField(max_length=30, null=True)
@@ -79,6 +101,7 @@ class Module(models.Model):
     
     def __str__(self):
         return f"{self.nom} ({self.volHoraire}h)"
+
 
 class ModuleForm(forms.ModelForm):
     class Meta:
@@ -149,9 +172,21 @@ class Affectation(models.Model):
         default=7
     )
 
-
     class Meta:
         unique_together = ("enseignant", "module", "annee_universitaire","classe")
     
     def __str__(self):
         return f"{self.enseignant}  {self.module}"
+
+
+class AffectationForm(forms.ModelForm):
+    class Meta:
+        model = Affectation
+        fields = ['enseignant', 'module', 'classe', 'annee_universitaire']
+        
+        widgets = {
+            'enseignant': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'module': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'classe': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'annee_universitaire': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'maxlength': '20'}),
+        }

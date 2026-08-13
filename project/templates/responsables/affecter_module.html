@@ -2,43 +2,57 @@
 {% block content %}
 <div class="mx-auto max-w-xl">
     <div class="mb-6">
-        <h1 class="text-3xl font-bold">Affecter un module</h1>
-        <p class="text-base-content/70">Associez un module à un enseignant pour une année universitaire.</p>
+        <h1 class="text-3xl font-bold">Création d'une affectation</h1>
     </div>
     <section class="card bg-base-100 shadow">
         <form method="post" class="card-body gap-5">
-            {% csrf_token %}
+        {% csrf_token %}
+            
+            <!-- Liste déroulante Enseignants -->
+            <label class="form-control">
+                <span class="label-text mb-1">Enseignant</span>
+                <select id="enseignant" name="enseignant" class="select select-bordered w-full" required autofocus>
+                    <option value="" disabled selected>Choisir un enseignant</option>
+                    {% for e in enseignants %}
+                        <option value="{{ e.id }}">{{ e.nom }} {{ e.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <!-- Liste déroulante Modules -->
             <label class="form-control">
                 <span class="label-text mb-1">Module</span>
                 <select id="module" name="module" class="select select-bordered w-full" required>
-                    <option value="">Choisir un module</option>
-                    {% for module in modules %}
-                    <option value="{{ module.id }}">
-                        {{ module.nom }} — {{ module.volHoraire }} h
-                    </option>{% empty %}
-                    <option disabled>
-                        Aucun module disponible
-                    </option>{% endfor %}
+                    <option value="" disabled selected>Choisir un module</option>
+                    {% for m in modules %}
+                        <option value="{{ m.id }}">{{ m.nom }}</option>
+                    {% endfor %}
                 </select>
             </label>
+
+            <!-- Liste déroulante Classes -->
             <label class="form-control">
-                <span class="label-text mb-1">Enseignant</span>
-                <select id="enseignant" name="enseignant" class="select select-bordered w-full" required>
-                    <option value="">Choisir un enseignant
-                    </option>
-                    {% for e in enseignants %}
-                    <option value="{{ e.id }}">
-                        {{ e.prenom }} {{ e.nom }}
-                    </option>{% endfor %}
+                <span class="label-text mb-1">Classe</span>
+                <select id="classe" name="classe" class="select select-bordered w-full" required>
+                    <option value="" disabled selected>Choisir une classe</option>
+                    {% for c in classes %}
+                        <!-- Affichage adapté aux attributs filiere et niveau du modèle Classe -->
+                        <option value="{{ c.id }}">{{ c.filiere }} - {{ c.niveau }}</option>
+                    {% endfor %}
                 </select>
             </label>
+
+            <!-- Champ de saisie Année Universitaire -->
             <label class="form-control">
                 <span class="label-text mb-1">Année universitaire</span>
-                <input id="annee_universitaire" name="annee_universitaire" class="input input-bordered w-full" value="2025-2026" required>
+                <input id="annee_universitaire" name="annee_universitaire" class="input input-bordered w-full" 
+                       maxlength="20" placeholder="Ex: 2025-2026" value="2025-2026" required>
             </label>
+
             <div class="card-actions justify-end">
-                <a class="btn btn-ghost" href="{% url 'dashboard_responsable' %}">Annuler</a>
-                <button class="btn btn-primary" type="submit">Enregistrer</button>
+                <!-- Lien d'annulation redirigeant vers la liste ou le tableau de bord -->
+                <a class="btn btn-ghost" href="{% url 'liste_affectations' %}">Annuler</a>
+                <button class="btn btn-primary" type="submit">Faire l'affectation</button>
             </div>
         </form>
     </section>

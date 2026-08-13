@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- Fil d'Ariane / Retour en arrière rapide -->
+    <div class="text-sm breadcrumbs mb-4">
+        <ul>
+            <li><a href="{% url 'liste_classes' %}">Classes</a></li>
+            <li>{{ classe.filiere }} - {{ classe.niveau }}</li>
+        </ul>
+    </div>
+
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-primary">{{ classe.filiere }} - {{ classe.niveau }}</h1>
+            <p class="text-sm text-base-content/60 mt-1">Code de la structure : <strong>{{ classe.code }}</strong></p>
+        </div>
+        <!-- Bouton Contextuel d'Ajout Direct -->
+        <a href="{% url 'ajouter_etudiant' classe.id %}" class="btn btn-primary btn-sm">
+            Inscrire un étudiant dans cette classe
+        </a>
+    </div>
+
+    <div class="overflow-x-auto bg-base-100 rounded-lg border border-base-200 shadow-sm">
+        <table class="table w-full">
+            <thead>
+                <tr class="bg-base-200/50">
+                    <th>Matricule</th>
+                    <th>Nom Complet</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in etudiants %}
+                <tr class="hover">
+                    <td class="font-mono text-sm text-secondary">{{ e.matricule }}</td>
+                    <td class="font-medium">{{ e.prenom }} {{ e.nom }}</td>
+                    <td>{{ e.email }}</td>
+                    <td>{{ e.telephone }}</td>
+                    <td>{{ e.adresse }}</td>
+                    <td class="text-right whitespace-nowrap">
+                        <div class="flex flex-col md:flex-row gap-1 justify-end items-end md:items-center">
+                        <a href="{% url 'modifier_etudiant' e.id %}" class="btn btn-warning btn-sm">
+                            Modifier / Transférer
+                        </a>
+                        
+                        <button class="btn btn-error btn-sm" onclick="document.getElementById('modal_retrait_{{ e.id }}').showModal()">Retirer</button>
+
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-8 text-base-content/50">Aucun étudiant inscrit dans cette classe.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-6 flex justify-start">
+    <a href="{% url 'liste_classes' %}" class="btn btn-outline btn-sm sm:btn-md gap-2">
+        <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Retour à la liste des classes
+    </a>
+</div>
+{% for e in etudiants %}
+<dialog id="modal_retrait_{{ e.id }}" class="modal">
+                            <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
+                                <h3 class="font-bold text-lg text-error">Confirmer le retrait</h3>
+                                <p class="py-4 text-sm text-base-content">
+                                    Voulez-vous vraiment retirer l'étudiant <span class="font-bold text-neutral">{{ e.prenom }} {{ e.nom }}</span> de la classe {{ classe }} ?
+                                </p>
+                                <div class="modal-action">
+                                    <form method="dialog"><button class="btn btn-ghost btn-sm">Annuler</button></form>
+                                    <form method="POST" action="{% url 'retirer_etudiant' e.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error btn-sm px-5">Confirmer</button>
+                                    </form>
+                    </div>
+                </div>
+        </dialog>
+        {% endfor %}   
+</div>
+
+{% endblock %}

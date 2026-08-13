@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mx-auto max-w-xl">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Création d'une classe</h1>
+    </div>
+    <section class="card bg-base-100 shadow">
+        <form method="POST" class="card-body gap-5">
+            {% csrf_token %}
+            
+            <label class="form-control">
+                <span class="label-text mb-1">Code de la classe</span>
+                {{ form.code }}
+            </label>
+
+            <label class="form-control">
+                <span class="label-text mb-1">Filière</span>
+                {{ form.filiere }}
+            </label>
+
+            <label class="form-control">
+                <span class="label-text mb-1">Niveau</span>
+                {{ form.niveau }}
+            </label>
+
+            <div class="card-actions justify-end mt-4">
+                <a class="btn btn-ghost" href="{% url 'liste_classes' %}">Annuler</a>
+                <button class="btn btn-primary" type="submit">Créer la classe</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
