@@ -43,10 +43,15 @@
                     <td class="text-right whitespace-nowrap">
                         <div class="flex flex-col md:flex-row gap-1 justify-end items-end md:items-center">
                         <a href="{% url 'modifier_etudiant' e.id %}" class="btn btn-warning btn-sm">
-                            Modifier / Transférer
+                            <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                              </svg>
                         </a>
                         
-                        <button class="btn btn-error btn-sm" onclick="document.getElementById('modal_retrait_{{ e.id }}').showModal()">Retirer</button>
+                        <button class="btn btn-error btn-sm" onclick="document.getElementById('modal_retrait_{{ e.id }}').showModal()"><svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>
+                      </button>
 
                         </div>
                     </td>
@@ -57,6 +62,43 @@
             </tbody>
         </table>
     </div>
+    <div class="overflow-x-auto w-full rounded-xl border border-slate-800 bg-[#fff] shadow-xl p-6 mt-8">
+  <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Suivi des dernières absences</h3>
+  <table class="table table-compact w-full text-slate-300">
+    <thead class="bg-[#ff] text-slate-400">
+      <tr>
+        <th>Date</th>
+        <th>Étudiant</th>
+        <th class="text-center">Statut / Justification</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in absences %}
+      <tr class="border-b border-slate-800/40">
+        <td class="font-mono text-xs">{{ a.date|date:"d/m/Y" }}</td>
+        <td class="font-semibold">{{a.etudiant.matricule }} {{ a.etudiant.prenom }} {{ a.etudiant.nom }}</td>
+        <td class="text-center flex justify-center">
+          <div class="form-control">
+            <label class="label cursor-pointer gap-3">
+              <span class="label-text text-xs font-bold {% if a.justifie %}text-success{% else %}text-error{% endif %}" id="label-toggle-{{ a.id }}">
+                {% if a.justifie %}Justifiée{% else %}Non justifiée{% endif %}
+              </span>
+              <input type="checkbox" 
+                     class="toggle {% if a.justifie %}toggle-success{% else %}toggle-error{% endif %} toggle-sm"
+                     {% if a.justifie %}checked{% endif %}
+                     onchange="basculerJustification('{{ a.id }}', this)">
+            </label>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="text-center py-4 text-slate-600 italic">Aucune absence enregistrée récemment.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
     <div class="mt-6 flex justify-start">
     <a href="{% url 'liste_classes' %}" class="btn btn-outline btn-sm sm:btn-md gap-2">
         <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -67,21 +109,50 @@
 </div>
 {% for e in etudiants %}
 <dialog id="modal_retrait_{{ e.id }}" class="modal">
-                            <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
-                                <h3 class="font-bold text-lg text-error">Confirmer le retrait</h3>
-                                <p class="py-4 text-sm text-base-content">
-                                    Voulez-vous vraiment retirer l'étudiant <span class="font-bold text-neutral">{{ e.prenom }} {{ e.nom }}</span> de la classe {{ classe }} ?
-                                </p>
-                                <div class="modal-action">
-                                    <form method="dialog"><button class="btn btn-ghost btn-sm">Annuler</button></form>
-                                    <form method="POST" action="{% url 'retirer_etudiant' e.id %}">
+    <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
+    <h3 class="font-bold text-lg text-error">Confirmer le retrait</h3>
+    <p class="py-4 text-sm text-base-content">
+    Voulez-vous vraiment retirer l'étudiant <span class="font-bold text-neutral">{{ e.prenom }} {{ e.nom }}</span> de la classe {{ classe }} ?
+    </p>
+    <div class="modal-action">
+    <form method="dialog"><button class="btn btn-ghost btn-sm">Annuler</button></form>
+    <form method="POST" action="{% url 'retirer_etudiant' e.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-error btn-sm px-5">Confirmer</button>
+ <button type="submit" class="btn btn-error btn-sm px-5">Confirmer</button>
                                     </form>
                     </div>
                 </div>
         </dialog>
         {% endfor %}   
 </div>
+<script>
+  function basculerJustification(absenceId, toggleInput){
+    const label = document.getElementById(`label-toggle-${absenceId}`);
+    const path_url = `/dashboard/absence/${absenceId}/toggle-justification/`;
+
+    fetch(path_url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.status === 'success') {
+        if (data.justifie) {
+          label.textContent = "Justifiée";
+          label.className = "label-text text-xs font-bold text-success";
+          toggleInput.className = "toggle toggle-success toggle-sm";
+        } else {
+          label.textContent = "Non justifiée";
+          label.className = "label-text text-xs font-bold text-error";
+          toggleInput.className = "toggle toggle-error toggle-sm";
+        }
+      }
+    })
+    .catch(error => console.error('Erreur:', error));
+  }
+</script>
 
 {% endblock %}

@@ -4,10 +4,8 @@ from . import views
 urlpatterns = [
     path('',views.connexion,name='login'),
     path('enseignants/dashboard_enseignant/',views.dashboard_enseignant,name='dashboard_enseignant'),
-    path('enseignants/emarger/',views.emarger, name='emarger'),
+    path('enseignants/emarger/',views.emarger_et_cahier, name='emarger_et_cahier'),
     path('enseignants/absence/',views.absence,name= 'absence'),
-    path('enseignants/cahier/',views.cahier , name='cahier'),
-    
     path('responsables/dashboard_responsable/', views.dashboard_responsable,name='dashboard_responsable'),
     # urls pour les modules
     path('responsables/modules/creer/', views.creer_module, name='creer_module'),
@@ -32,7 +30,7 @@ urlpatterns = [
     path('responsables/etudiants/retirer/<int:pk>/', views.retirer_etudiant , name='retirer_etudiant'),
     # urls pour la deconnexion
     path('deconnexion/', views.deconnexion, name='deconnexion'),
-    path('dashboard/exporter/pdf/', views.apercu_impression_pdf , name='apercu_impression_pdf'),
+    
     path('dashboard/absence/<int:absence_id>/toggle-justification/',views.toggle_justification_absence , name='toggle_justification_absence'),
     
 ]

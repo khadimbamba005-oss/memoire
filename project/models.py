@@ -38,6 +38,16 @@ class Enseignant(models.Model):
     def __str__(self):
         return f"{self.prenom} {self.nom}"
     
+class AssistantePedagogique(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    nom = models.CharField(max_length=40)
+    prenom = models.CharField(max_length=40)
+    email = models.EmailField()
+    telephone = models.CharField(max_length=9)
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom}"
+    
 class Classe(models.Model):
     code = models.CharField(max_length=10, blank=True)
     filiere = models.CharField(max_length=40)
@@ -86,6 +96,7 @@ class EtudiantForm(forms.ModelForm):
             'email':forms.EmailInput(attrs={'class':'input input-borded w-full'}),
         }
     
+
 class Module(models.Model):
     nom = models.CharField(max_length=30, null=True)
     heures_cm = models.PositiveBigIntegerField(default=0 , verbose_name="Heure CM")
@@ -148,11 +159,17 @@ class Absence(models.Model):
     
     def justifier(self , motif):
         self.justifie = True
-        self.motif = motif
         self.save()
 
 
 class Cahier(models.Model):
+    emargement = models.OneToOneField(
+        Emargement, 
+        on_delete=models.CASCADE, 
+        related_name="cahier_texte",
+        null=True, 
+        blank=True
+    )
     enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     classe = models.ForeignKey(Classe , on_delete=models.CASCADE , null=True , blank=True)
     date = models.DateField()
@@ -190,3 +207,4 @@ class AffectationForm(forms.ModelForm):
             'classe': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'annee_universitaire': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'maxlength': '20'}),
         }
+        

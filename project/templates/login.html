@@ -7,13 +7,45 @@
     <title>Connexion | Sign automatiquely</title>
     <link href="{% static 'vendor/daisyui/daisyui.css' %}" rel="stylesheet" type="text/css">
     <script src="{% static 'vendor/daisyui/tailwind-browser.js' %}"></script>
+    <style>
+
+        :root {
+  --color-azure-brume: #f0f8ff; /* À ajuster selon votre nuance exacte d'azure */
+  --color-dark: #1a1a1a;
+  --color-blanc: #ffffff;
+  --color-noir: #000000;
+}
+
+/* Application des règles */
+body {
+  background-color: var(--color-azure-brume);
+  color: var(--color-noir);
+}
+
+header {
+  background-color: var(--color-dark);
+  color: var(--color-blanc);
+}
+
+section {
+  background-color: var(--color-blanc);
+  color: #1D4A7D;
+}
+
+button {
+  background-color: #1D4A7D;
+  color: var(--color-blanc);
+}
+
+
+    </style>
 </head>
 <body class="min-h-screen bg-base-200 grid place-items-center p-4">
     <section class="card w-full max-w-md bg-base-100 shadow-xl">
         <div class="card-body">
-            <h1 class="card-title text-2xl text-center">Gestion pédagogique</h1>
+            <h1 class="card-title text-2xl text-center">ISI Digital</h1>
             <p class="mb-4 text-base-content/70">Connectez-vous à votre espace.</p>
-            {% if error %}<div role="alert" class="alert alert-error"><span>{{ error }}</span></div>{% endif %}
+            
             <form method="post" class="space-y-4">
                 {% csrf_token %}
                 <label class="form-control"><span class="label-text mb-1">Nom d’utilisateur</span><input type="text" name="username" class="input input-bordered w-full" required autofocus></label>

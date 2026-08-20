@@ -61,17 +61,8 @@
             <button class="btn btn-primary" type="submit">Enregistrer l’appel</button>
             </div>
         </form>
-        {% else %}
-        <div class="alert alert-info">
-            <span>Choisissez une classe pour afficher ses étudiants.
-            </span>
-        </div>
-        <div class="flex justify-end">
-            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-ghost">Annuler</a>
-        </div>
         {% endif %}
-
-        <!-- Script pour mettre absent ou present  -->
+                <!-- Script pour mettre absent ou present  -->
 
         <script>
             function updateRowStatus(checkbox)

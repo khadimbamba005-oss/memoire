@@ -9,6 +9,10 @@
         <form method="post" class="card-body gap-5">
         {% csrf_token %}
             <label class="form-control">
+                <span class="label-text mb-1">Code du module</span>
+                <input id="nom" name="code" class="input input-bordered w-full" maxlength="30" required autofocus>
+            </label>
+            <label class="form-control">
                 <span class="label-text mb-1">Nom du module</span>
                 <input id="nom" name="nom" class="input input-bordered w-full" maxlength="30" required autofocus>
             </label>

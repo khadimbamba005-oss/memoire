@@ -1,10 +1,12 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block content %}
 <div class="mb-8">
   <h1 class="text-3xl font-bold">Mon tableau de bord</h1>
   <p class="text-base-content/70">
     Suivez la progression de vos enseignements.
   </p>
 </div>
+<!-- Section statistiques -->
 <div
   class="stats stats-vertical w-full bg-base-100 shadow md:stats-horizontal mb-8"
 >
@@ -12,11 +14,166 @@
     <div class="stat-title">Modules enseignés</div>
     <div class="stat-value text-primary">{{ modules_data|length }}</div>
   </div>
+  <!-- Nombre d'heures par semaine -->
   <div class="stat">
-    <div class="stat-title">Activité récente</div>
-    <div class="stat-desc">Cours des 7 derniers jours</div>
+    <div class="stat-title">Heures par semaine</div>
+    <div class="stat-value text-succes">{{ total_heures|default:"0"}} h</div>
   </div>
 </div>
+  <!-- Recap de la semaine -->
+  <section class="card-bg-base-100 shadow mb-8">
+    <div class="card-body">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="card-title">Suivi mensuel (30 derniers jours)</h2>
+        <span class="badge badge-neutral p-3 text-xs font-bold" style="background-color: #1D4A7D;">Mois en cours</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid cols-6 lg:grid-cols-10 gap-3">
+        {% for jour in historique_semaine %}
+        <div class="border border-base-200 rounded-xl p-3 text-center flex flex-col justify-between items-center min-h-[110px] {% if jour.aujourdhui%}bg-primary/5 border-primary shadow-sm{% else%}bg-base-200/30{% endif %}">
+          <div>
+            <p class="text-xs uppercase tracking-wider font-bold text-base-content/50">{{ jour.nom_jour}}</p>
+            <p class="text-sm font-bold mt-0.5">{{ jour.date_str }}</p>
+          </div>
+
+          <div class="mt-2">
+            {% if jour.heures > 0 %}
+            <span class="badge badge-success gap-2 font-mono text-xs font-bold py-2.5">
+              + {{ jour.heures }} h
+            </span>
+            <p class="text-[10px] text-base-content/60 truncate max-w-[85px] mt-1">
+              {{ jour.module_nom}}
+            </p>
+            {% else %}
+            <span class="text-xs text-base-content/40 italic">0 h</span>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <p class="col-span-full py-4 text-center text-sm text-base-content/50">
+          Aucun historique pour ce mois.
+        </p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Historique des des contenus des cours passes -->
+
+  <section class="card bg-base-100 shadow mb-8 border-base-200">
+    <div class="card-body">
+      <h2 class="card-title text-base font-bold mb-2">
+        Historique des chapitres et activites semaines passees (Semaines precedentes)
+      </h2>
+
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr class="bg-base-200/60">
+            <th>Date</th>
+            <th>Classe/Module</th>
+            <th>Contenu</th>
+          </tr>
+          </thead>
+          <tbody>
+            {% for c in contenu_passes %}
+            <tr class="hover:bg-base-200/30">
+              <td class="whitespace-nowrap font-medium text-xs">
+                {{ c.date|date:"d/m/Y"}}
+              </td>
+              <td>
+                <span class="font-semibold text-sm block text-primary">
+                  {{ c.module.nom}}
+                </span>
+                <span class="text-[11px] text-base-content/50">'
+                  {{ c.classe }}
+                </span>
+
+              </td>
+              <td>
+                <p class="text-xs text-base-content/70 leading-relaxed">
+                  {{ c.contenu}}
+                </p>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center py-6 text-sm text-base-content/40 italic">
+                 Aucun contenu archivé pour les semaines passées
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Historique des semaines passées -->
+<section class="card bg-[#111827] border border-slate-800/80 shadow-xl mb-8">
+  <div class="card-body p-4 md:p-6">
+    
+    <!-- En-tête de la section avec contrôles de navigation -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800/50 pb-4">
+      <div>
+        <h2 class="card-title text-base font-bold text-slate-200">Archives des émargements</h2>
+        <p class="text-xs text-slate-400 mt-0.5">
+          {% if semaine_offset == 0 %}Semaine en cours{% else %}Il y a {{ semaine_offset }} semaine(s){% endif %} 
+          (Total : <span class="text-emerald-400 font-bold font-mono">{{ total_heures_filtre }} h</span>)
+        </p>
+      </div>
+      
+      <!-- Boutons de navigation temporelle -->
+      <div class="join bg-[#1D4A7D] border border-slate-800 p-0.5 rounded-lg shadow-sm">
+        <a href="?semaine={{ precedente_offset }}" class="join-item btn btn-ghost btn-xs text-slate-400 hover:text-slate-200">
+          &larr; Semaine précédente
+        </a>
+        {% if semaine_offset > 0 %}
+        <a href="?semaine={{ suivante_offset }}" class="join-item btn btn-ghost btn-xs text-slate-400 hover:text-slate-200 border-l border-slate-800">
+          Semaine suivante &rarr;
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Liste détaillée jour par jour -->
+    <div class="space-y-3">
+      {% for jour in historique_archive %}
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-xl border {% if jour.a_travaille %}border-slate-800 bg-[#1F2937]/10{% else %}border-slate-900/40 bg-transparent opacity-50{% endif %}">
+        
+        <!-- Date et Jour -->
+        <div class="w-full sm:w-32 flex-shrink-0">
+          <span class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">{{ jour.nom_jour }}</span>
+          <p class="text-xs font-medium text-slate-500">{{ jour.date_str }}</p>
+        </div>
+        
+        
+        <div class="flex-1">
+          {% if jour.a_travaille %}
+            <div class="flex flex-wrap gap-2">
+              {% for c in jour.cours %}
+              <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg text-xs flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-200">{{ c.module }}</span>
+                <span class="text-slate-500 font-mono text-[11px]">({{ c.horaire }})</span>
+                <div class="badge badge-success bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-bold font-mono text-[10px]">
+                  +{{ c.heures }}h
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-600 italic">Aucun cours déclaré à cette date.</p>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+  <!-- Section progression cours -->
 <section class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title">Progression de mes modules</h2>
