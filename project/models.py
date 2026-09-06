@@ -96,20 +96,27 @@ class EtudiantForm(forms.ModelForm):
             'email':forms.EmailInput(attrs={'class':'input input-borded w-full'}),
         }
     
-
 class Module(models.Model):
+    code = models.CharField(max_length=10, unique=True, null=True, blank=True)
     nom = models.CharField(max_length=30, null=True)
-    heures_cm = models.PositiveBigIntegerField(default=0 , verbose_name="Heure CM")
-    heures_td = models.PositiveBigIntegerField(default=0 , verbose_name="Heures TD")
-    heures_tp = models.PositiveBigIntegerField(default=0 , verbose_name="Heures TP")
+    heures_cm = models.PositiveBigIntegerField(default=0, verbose_name="Heure CM")
+    heures_td = models.PositiveBigIntegerField(default=0, verbose_name="Heures TD")
+    heures_tp = models.PositiveBigIntegerField(default=0, verbose_name="Heures TP")
     volHoraire = models.IntegerField(null=True)
-    
-    def save(self , *args , **kwargs):
-        self.volHoraire = self.heures_cm + self.heures_td + self.heures_tp
+
+    def save(self, *args, **kwargs):
+        self.volHoraire = (self.heures_cm or 0) + (self.heures_td or 0) + (self.heures_tp or 0)
         
-        super().save(*args , **kwargs)
-        
+        if not self.pk:
+            super().save(*args, **kwargs)
     
+        if not self.code:
+            prefixe = "".join([mot[:3].upper() for mot in self.nom.split()])[:4]
+            self.code = f"{prefixe}-{self.id}"
+            kwargs['force_insert'] = False
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.nom} ({self.volHoraire}h)"
 
@@ -117,14 +124,12 @@ class Module(models.Model):
 class ModuleForm(forms.ModelForm):
     class Meta:
         model = Module
-        fields = ['nom','heures_cm','heures_td','heures_tp','volHoraire']
-        
+        fields = ['nom','heures_cm','heures_td','heures_tp']
         widgets = {
             'nom':forms.TextInput(attrs={'class':'input input-bordered w-full'}),
             'heures_cm':forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
             'heures_td': forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
             'heures_tp':forms.NumberInput(attrs={'class':'input input-bordered w-full','oninput':'CalculerVolumeHoraire()'}),
-            'volHoraire':forms.NumberInput(attrs={'class':'input input-bordered w-full', 'readonly':'readonly'}),
         }
         
     def clean(self):
@@ -146,7 +151,6 @@ class Emargement(models.Model):
     module = models.ForeignKey(Module , on_delete=models.CASCADE , blank=True , null=True )
     classe = models.ForeignKey(Classe , on_delete=models.CASCADE , null=True)
     
-
     def __str__(self):
         return f"{self.enseignant} {self.date}"
 
@@ -156,7 +160,6 @@ class Absence(models.Model):
     date = models.DateField()
     justifie = models.BooleanField(default=False)
 
-    
     def justifier(self , motif):
         self.justifie = True
         self.save()

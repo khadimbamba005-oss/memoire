@@ -228,8 +228,7 @@
       selectModal.form.submit();
     }
   }
-// Fonction imprimer lq fiche individuelle des enseignants
-
+// Fonction imprimer la fiche individuelle des enseignants
 function imprimerDossier(divId, prenom, nom, totalHeures) {
 
     const zone = document.getElementById(divId);
@@ -319,7 +318,6 @@ function imprimerDossier(divId, prenom, nom, totalHeures) {
 
         return;
     }
-
 
     fenetreApercu.document.write(`
         <!DOCTYPE html>
@@ -588,26 +586,19 @@ function imprimerDossier(divId, prenom, nom, totalHeures) {
 
         <body>
 
-
             <!-- BARRE D'ACTIONS -->
-
             <div class="toolbar">
 
                 <button
                     class="btn-tool"
                     onclick="window.print()">
-
                     🖨️ Imprimer
-
                 </button>
-
 
                 <button
                     class="btn-tool btn-download"
-                    id="btn-download">
-
+                    id="btn-download" onclick="window.download()">
                     📥 Télécharger
-
                 </button>
 
             </div>
@@ -674,7 +665,6 @@ function imprimerDossier(divId, prenom, nom, totalHeures) {
 
 
             <script>
-
                 /*
                  * Téléchargement du HTML
                  */
@@ -743,12 +733,9 @@ function imprimerDossier(divId, prenom, nom, totalHeures) {
                             a.click();
 
                             document.body.removeChild(a);
-
                             URL.revokeObjectURL(url);
-
                         }
                     );
-
             <\/script>
 
 
@@ -792,7 +779,6 @@ function calculerDuree(arrivee, depart) {
     if (difference < 0) {
 
         difference += 24 * 60;
-
     }
 
 

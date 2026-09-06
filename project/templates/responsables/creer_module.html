@@ -9,10 +9,6 @@
         <form method="post" class="card-body gap-5">
         {% csrf_token %}
             <label class="form-control">
-                <span class="label-text mb-1">Code du module</span>
-                <input id="nom" name="code" class="input input-bordered w-full" maxlength="30" required autofocus>
-            </label>
-            <label class="form-control">
                 <span class="label-text mb-1">Nom du module</span>
                 <input id="nom" name="nom" class="input input-bordered w-full" maxlength="30" required autofocus>
             </label>
@@ -39,7 +35,7 @@
             </label>
 
             <div class="card-actions justify-end">
-                <a class="btn btn-ghost" href="{% url 'dashboard_responsable' %}">Annuler</a>
+                <a class="btn btn-ghost" href="{% url 'liste_modules' %}">Annuler</a>
                 <button class="btn btn-primary" type="submit">Créer le module</button>
             </div>
         </form>

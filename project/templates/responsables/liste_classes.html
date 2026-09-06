@@ -63,7 +63,7 @@
                 <p class="py-4 text-base-content text-sm">
                         Voulez-vous vraiment supprimer la classe<span class="font-semibold text-neutral">{{ c.filiere }} {{ c.niveau }} ({{ c.code }})</span> ?
                     <span class="block mt-1 font-medium text-error">
-                        Cette action est irréversible et échouera si des étudiants y sont rattachés.
+                        Cette action est irréversible et échouera si des étudiants y sont inscrits.
                     </span>
                 </p>
                 <div class="modal-action">
@@ -76,9 +76,6 @@
                     </form>
                 </div>
             </div>
-            <form method="dialog" class="modal-backdrop bg-slate-900/40 backdrop-blur-[2px]">
-            <button>Fermer</button>
-        </form>
     </dialog>
     {% endfor %}
 </div>

@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Emargement, Enseignant, Absence, Etudiant, Classe, Cahier, Module, Affectation, ModuleForm , AffectationForm , ClasseForm , EtudiantForm
-from datetime import datetime , timedelta ,date
+from datetime import datetime , timedelta ,date , time
 from django.db.models.functions import TruncDate
 from django.db.models import Sum,F , ExpressionWrapper ,DurationField
 from django.utils import timezone
@@ -182,21 +182,16 @@ def dashboard_responsable(request):
                     else:
                         emargements_dossier.append(em)
                 else:
-                    # Par défaut, si l'enseignant n'est pas ciblé, sa modal contiendra tout son historique annuel
                     emargements_dossier.append(em)
 
-        # Ajout du dictionnaire formaté pour le template
         enseignant_data.append({
             "enseignant": ens,
             "total_heures": round(total_heures, 2),
             "heures_mensuelles": round(heures_mensuelles, 2),
             "emargements": emargements_dossier
         })
-
-    # 5. Extraction de la table facultative demandée pour le bas de page
     cahiers_texte = Cahier.objects.select_related('enseignant', 'module', 'classe').all().order_by('-date')[:15]
 
-    # 6. Contexte unifié destiné à l'interface
     context = {
         "classes_count": Classe.objects.count(),
         "etudiants_count": Etudiant.objects.count(),
@@ -278,7 +273,6 @@ def creer_affectation(request):
         except (ValueError, Enseignant.DoesNotExist, Module.DoesNotExist, Classe.DoesNotExist):
             messages.error(request, "Une des entités sélectionnées (Enseignant, Module ou Classe) est invalide.")
             
-    # Récupération des données pour alimenter les listes déroulantes (<select>) du formulaire
     context = {
         'enseignants': Enseignant.objects.all(),
         'modules': Module.objects.all(),
@@ -286,7 +280,7 @@ def creer_affectation(request):
     }
     return render(request, 'responsables/affecter_module.html', context)
 
-# Vue pour affectation
+
 def modifier_affectation(request, pk):
     
     if request.user.role != 'responsable':
@@ -340,7 +334,7 @@ def creer_module(request):
             messages.error(request,"Le volume horaire total ne peut à 0 heure.")
         else:
             module = Module.objects.create(nom=nom,heures_cm = cm, heures_td=td,heures_tp=tp)
-            if module:
+            if module.code.exists():
                 messages.warning(request, "Ce module existe déjà")
             else:
                 messages.success(request,f"Le module {nom} a été créé avec succès.")
@@ -358,7 +352,7 @@ def liste_modules(request):
     page_obj = paginator.get_page(page_number)
     return render(request,'responsables/liste_modules.html',{'page_obj':page_obj })
 
-@require_POST
+
 def modifier_module(request, pk):
     if request.user.role != 'responsable':
             return HttpResponseForbidden("Cette action est réservée à l'assistante pédagogique.")
@@ -383,76 +377,108 @@ def supprimer_module(request, pk):
     module = get_object_or_404(Module, pk=pk)
     module.delete()
     return redirect('liste_modules')
-
-
     
-# vue pour faire une nouvelle affectation 
-
 # Vue pour les emargements 
 def emarger_et_cahier(request):
-    # 1. Contrôle strict du rôle de l'utilisateur
     if request.user.role != 'enseignant':
-        return HttpResponseForbidden("Accès refusé : Cette page est réservée aux enseignants.")
+        return HttpResponseForbidden("Cette action est reservee aux enseignants")
     
-    enseignant = Enseignant.objects.get(user=request.user)
-    jour = date.today()
+    try:
+        enseignant = Enseignant.objects.get(user=request.user)
+    except Enseignant.DoesNotExist:
+        return HttpResponseForbidden("Aucun profil enseignant associe a ce compte")
     
-    # Récupération et correction des listes distinctes d'affectations
-    modules = Module.objects.filter(affectation__enseignant=enseignant).distinct()
+    maintenant = timezone.localtime()
+    jour = maintenant.date()
+    heure_actuelle = maintenant.time()
+    
+    heure_debut = time(8,0)
+    heure_fin = time(20,0)
+    
+    horaire_autorise = (
+        heure_debut <= heure_actuelle < heure_fin
+    )
+    
+    modules = Module.objects.filter(affectation__enseignant = enseignant).distinct()
+    
     classes = Classe.objects.filter(affectation__enseignant=enseignant).distinct()
-
+    
     if request.method == 'POST':
+        if not horaire_autorise:
+            messages.error(request,"L'emargement et le cahier de texte ne sont disponibles qu'entre 8h00 et 20h00.")
+            return redirect('emarger_et_cahier')
+        
         arrivee = request.POST.get('arrivee')
         depart = request.POST.get('depart')
-        module_id = request.POST.get('module')
+        module_id  = request.POST.get('module')
         classe_id = request.POST.get('classe')
-        contenu_cours = request.POST.get('contenu') # Récupération du cahier de texte
-
-        # 2. Vérifications de sécurité sur les affectations passées en POST
-        if module_id and not modules.filter(id=module_id).exists():
-            messages.error(request, "Action non autorisée : Ce module ne vous est pas attribué.")
+        contenu_cours = request.POST.get('contenu')
+    
+    
+        if not module_id:
+            messages.error(request,"Veuillez selectionner une matière")
+        
             return redirect('emarger_et_cahier')
-            
-        if classe_id and not classes.filter(id=classe_id).exists():
-            messages.error(request, "Action non autorisée : Vous n'êtes pas affecté à cette classe.")
+    
+        if not modules.filter(id=module_id).exists():
+            messages.error(request,"Action non autorisee:" "Cette matiere ne vous est pas attribuee.")
+            return redirect('emarger_et_cahier')   
+    
+        if not classe_id:
+            messages.error(request,"Veuillez selectionner une classe")
+        
             return redirect('emarger_et_cahier')
-
+    
+        if not classes.filter(id=classe_id).exists():
+            messages.error(request,"Cette nous est pas attribuee")
+        
+            return redirect('emarger_et_cahier')
+    
         if not contenu_cours or contenu_cours.strip() == "":
-            messages.error(request, "Donnée manquante : Le contenu du cahier de texte est obligatoire.")
+            messages.error(request,"Le contenu du cahier de texte est oblogatoire")
+        
             return redirect('emarger_et_cahier')
+    
+        deja_emarge = Emargement.objects.filter(
+        enseignant = enseignant,
+        date = jour,
+        module_id = module_id,
+        classe_id = classe_id,
+        ).exists()
+    
+        if deja_emarge:
+            messages.warning(request,"Vous avez deja emarge")
+        
+            return redirect('emarger_et_cahier')
+    
+        nouvel_emargement  = Emargement.objects.create(
+        enseignant=enseignant,
+        module_id=module_id,
+        date = jour,
+        arrivee = arrivee,
+        depart = depart,
+        classe_id= classe_id,
+        )
+    
+        Cahier.objects.create(
+        emargement = nouvel_emargement,
+        enseignant=enseignant,
+        classe_id=classe_id,
+        module_id = module_id,
+        date = jour,
+        contenu = contenu_cours,
+        )
+    
+        messages.success(request,"Votre emargement et cahier de texte ont été enregistrés avec succès")
+        return redirect('dashboard_enseignant')
 
-        
-        nouvel_emargement = Emargement.objects.create(
-            enseignant=enseignant,
-            date=jour,
-            arrivee=arrivee,
-            depart=depart,
-            module_id=module_id or None,
-            classe_id=classe_id or None,
-        )
-        
-        # 4. Création immédiate du Cahier lié physiquement à cet émargement
-        nouveau_cahier = Cahier.objects.create(
-            emargement=nouvel_emargement, # Liaison OneToOne directe !
-            enseignant=enseignant,
-            classe_id=classe_id or None,
-            module_id=module_id or None,
-            date=jour,
-            contenu=contenu_cours
-        )
-        if nouvel_emargement and nouveau_cahier:
-            messages.warning(request,"Vous avez deja émargé")
-        else:
-            
-            messages.success(request, "Votre émargement et le cahier de texte ont été enregistrés avec succès.")
-            return redirect('dashboard_enseignant')
-    # Rendu de la page unique
-    return render(request, 'enseignants/emarger_et_cahier.html', {
-        'enseignant': enseignant,
-        'jour': jour,
-        'modules': modules,
-        'classes': classes,
-    })
+    return render(request,'enseignants/emarger_et_cahier.html',{
+        'enseignant':enseignant,
+        'jour':jour,
+        'modules':modules,
+        'classes':classes,
+        'heure_actuelle':heure_actuelle,
+        'horaire_autorise':horaire_autorise,})
     
     
 def absence(request):

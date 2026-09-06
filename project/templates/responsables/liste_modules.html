@@ -12,7 +12,8 @@
         <table class="table w-full">
             <thead>
                 <tr class="bg-base-200/50">
-                    <th>Nom du Module</th>
+                    <th>Code du module</th>
+                    <th>Nom du module</th>
                     <th class="text-center">CM</th>
                     <th class="text-center">TD</th>
                     <th class="text-center">TP</th>
@@ -23,6 +24,7 @@
             <tbody>
                 {% for m in page_obj %}
                 <tr class="hover">
+                    <td class="font-medium text-base-content">{{ m.code }}</td>
                     <td class="font-medium text-base-content">{{ m.nom }}</td>
                     <td class="text-center">{{ m.heures_cm }} h</td>
                     <td class="text-center">{{ m.heures_td }} h</td>
@@ -42,9 +44,9 @@
                         </button>
 
                         <dialog id="modal_supprimer_{{ module.id }}" class="modal">
-                            <div class="modal-box text-left bg-neutral-100 border border-neutral-300 shadow-2xl rounded-lg">
+                            <div class="modal-box text-left bg-[#fff] border border-neutral-300 shadow-2xl rounded-lg">
                                 <h3 class="font-bold text-lg text-error flex items-center gap-2">Confirmer la suppression</h3>
-                                <p class="py-4  text-base-content text-sm">Voulez-vous vraiment supprimer le module <span class="font-semibold text-neutral">{{ m.nom }}</span> ? 
+                                <p class="py-4 text-base-content text-sm">Voulez-vous vraiment supprimer le module <span class="font-semibold text-neutral">{{ m.nom }}</span> ? 
                                 <span class="block mt-1 font-medium text-error">
                                     Cette action est irreversible
                                 </span> .</p>
@@ -58,9 +60,6 @@
                                     </form>
                                 </div>
                             </div>
-                            <form method="dialog" class="modal-backdrop bg-slate-900/40 backdrop-blur-[2px]">
-                                <button>Fermer</button>
-                            </form>
                         </dialog>
                     </td>
                 </tr>

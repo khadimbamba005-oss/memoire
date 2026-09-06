@@ -30,7 +30,6 @@ urlpatterns = [
     path('responsables/etudiants/retirer/<int:pk>/', views.retirer_etudiant , name='retirer_etudiant'),
     # urls pour la deconnexion
     path('deconnexion/', views.deconnexion, name='deconnexion'),
-    
     path('dashboard/absence/<int:absence_id>/toggle-justification/',views.toggle_justification_absence , name='toggle_justification_absence'),
     
 ]

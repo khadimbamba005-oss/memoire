@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block content %}
+{% block content %} 
 <div class="container mx-auto p-6 max-w-md bg-base-100 shadow-xl rounded-xl">
-<form method="POST" class="space-y-4">
+<form method="POST" action="{% url 'modifier_module' module.pk %}" class="space-y-4">
     {% csrf_token %}
 
     <label class="form-control">
